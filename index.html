@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Golf Trip Tournament Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            mastersGreen: "#0B3B24",
+            mastersGold: "#F9D976",
+            mastersCream: "#FFF9E6",
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    .vertical-score-grid {
+      display: grid;
+      grid-template-columns: 120px repeat(var(--player-count), 70px);
+      gap: 6px;
+      align-items: center;
+      margin-top: 10px;
+    }
+  
+    .hole-label {
+      font-weight: bold;
+      text-align: right;
+      padding-right: 10px;
+      font-size: 14px;
+    }
+  
+    .player-header {
+      font-weight: bold;
+      text-align: center;
+      font-size: 13px;
+      line-height: 1.2;
+    }
+  
+    .masters-input {
+      width: 70px;
+      text-align: center;
+      padding: 4px;
+      border: 2px solid #0B6623; /* Masters green */
+      border-radius: 6px;
+      font-size: 14px;
+    }
+  
+    .player-info-box {
+      font-size: 14px;
+      line-height: 1.2;
+      text-align: center;
+      margin-bottom: 10px;
+      border-radius: 6px;
+      height: 52px;
+    }
+
+      /* Color-coded scoring */
+  .score-birdie { background-color: #b6e3b6; }     /* light green */
+  .score-par { background-color: #e8f5e9; }        /* very light green */
+  .score-bogey { background-color: #ffe0b2; }      /* light orange */
+  .score-double { background-color: #ffccbc; }     /* deeper orange */
+  </style>
+  
+  
+</head>
+<body class="min-h-screen bg-mastersCream text-slate-900">
+  <!-- App Shell -->
+  <div class="max-w-6xl mx-auto px-4 py-6">
+    <!-- Header -->
+    <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+      <div>
+        <h1 class="text-3xl font-bold text-mastersGreen tracking-tight">
+          Golf Trip Tournament Tracker
+        </h1>
+        <p class="text-sm text-slate-700 mt-1">
+          6-Player • 3-Round
+        </p>
+      </div>
+      <div class="flex items-center gap-3">
+   <!--      <span class="inline-flex items-center rounded-full bg-mastersGreen/10 px-3 py-1 text-xs font-medium text-mastersGreen border border-mastersGreen/30">
+          PostgreSQL: <span class="ml-1 font-semibold">golf_trip</span>
+        </span>
+        <span class="inline-flex items-center rounded-full bg-mastersGold/20 px-3 py-1 text-xs font-medium text-mastersGreen border border-mastersGold/40">
+          Frontend: Single-page • Tailwind • Vanilla JS
+        </span> -->
+      </div>
+    </header>
+
+    <!-- Tabs -->
+    <nav class="mb-4 border-b border-slate-200">
+      <ul class="flex flex-wrap gap-2">
+        <li>
+          <button data-tab="leaderboard"
+                  class="tab-btn px-4 py-2 text-sm font-semibold rounded-t-md border border-b-0 border-slate-200 bg-white text-mastersGreen">
+            Leaderboard
+          </button>
+        </li>
+        <li>
+          <button data-tab="round-setup"
+                  class="tab-btn px-4 py-2 text-sm font-semibold rounded-t-md border border-b-0 border-transparent text-slate-700 hover:bg-white">
+            Round Setup
+          </button>
+        </li>
+        <li>
+          <button data-tab="score-input"
+                  class="tab-btn px-4 py-2 text-sm font-semibold rounded-t-md border border-b-0 border-transparent text-slate-700 hover:bg-white">
+            Score Input
+          </button>
+        </li>
+        <li>
+          <button data-tab="side-games"
+                  class="tab-btn px-4 py-2 text-sm font-semibold rounded-t-md border border-b-0 border-transparent text-slate-700 hover:bg-white">
+            Side Games
+          </button>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Content Panels -->
+    <main class="space-y-6">
+      <!-- Leaderboard Tab -->
+      <section id="tab-leaderboard" class="tab-panel">
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-semibold text-mastersGreen">Tournament Leaderboard</h2>
+            <span class="text-xs text-slate-500">
+              Daily Round Score = Total Quota Points − Target Quota • Tournament = Σ 3 Rounds
+            </span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm border border-slate-200 rounded-lg overflow-hidden">
+              <thead class="bg-mastersGreen text-mastersCream">
+                <tr>
+                  <th class="px-3 py-2 text-left">Player</th>
+                  <th class="px-3 py-2 text-center">Index</th>
+                  <th class="px-3 py-2 text-center">R1</th>
+                  <th class="px-3 py-2 text-center">R2</th>
+                  <th class="px-3 py-2 text-center">R3</th>
+                  <th class="px-3 py-2 text-center">Total</th>
+                </tr>
+              </thead>
+              <tbody id="leaderboard-body" class="bg-white divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Round Setup Tab -->
+      <section id="tab-round-setup" class="tab-panel hidden">
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6 space-y-6">
+          <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+            <div class="space-y-2">
+              <h2 class="text-xl font-semibold text-mastersGreen">Round Setup</h2>
+              <p class="text-xs text-slate-600">
+                Choose round, course, and assign players into two 3-man groups. These assignments drive score input and side games.
+              </p>
+            </div>
+            <div class="flex flex-wrap gap-3">
+              <div>
+                <label class="block text-xs font-medium text-slate-700 mb-1">Round</label>
+                <select id="round-select"
+                        class="border border-slate-300 rounded-md px-3 py-1 text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-mastersGreen/40">
+                  <option value="1">Round 1</option>
+                  <option value="2">Round 2</option>
+                  <option value="3">Round 3</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-700 mb-1">Course</label>
+                <select id="course-select"
+                        class="border border-slate-300 rounded-md px-3 py-1 text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-mastersGreen/40">
+                  <option value="diamond_springs">Diamond Springs</option>
+                  <option value="harbor_shores">Harbor Shores</option>
+                  <option value="the_patriot">The Patriot</option>
+                </select>
+              </div>
+              <button id="save-round-setup"
+                      class="mt-4 md:mt-0 inline-flex items-center gap-2 px-4 py-2 rounded-md bg-mastersGreen text-mastersCream text-xs font-semibold shadow-sm hover:bg-mastersGreen/90">
+                Save Round Setup (DB)
+              </button>
+            </div>
+          </div>
+
+          <!-- Course Info -->
+          <div id="course-info" class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <div class="bg-mastersGreen/5 border border-mastersGreen/20 rounded-lg p-3">
+              <h3 class="font-semibold text-mastersGreen mb-1">Course Details</h3>
+              <p id="course-name" class="text-sm font-medium"></p>
+              <p id="course-par" class="mt-1"></p>
+              <p id="course-rating" class="mt-1"></p>
+              <p id="course-slope" class="mt-1"></p>
+            </div>
+            <div class="bg-mastersGreen/5 border border-mastersGreen/20 rounded-lg p-3">
+              <h3 class="font-semibold text-mastersGreen mb-1">Front 9 Pars</h3>
+              <p id="course-pars-front" class="font-mono text-xs"></p>
+              <h3 class="font-semibold text-mastersGreen mt-2 mb-1">Back 9 Pars</h3>
+              <p id="course-pars-back" class="font-mono text-xs"></p>
+            </div>
+            <div class="bg-mastersGreen/5 border border-mastersGreen/20 rounded-lg p-3">
+              <h3 class="font-semibold text-mastersGreen mb-1">Hole Handicaps</h3>
+              <p id="course-hdcps-front" class="font-mono text-xs"></p>
+              <p id="course-hdcps-back" class="font-mono text-xs mt-2"></p>
+            </div>
+          </div>
+
+          <!-- Group Assignment -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <!-- Player Pool -->
+            <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">
+              <h3 class="text-sm font-semibold text-slate-800 mb-2">Player Pool</h3>
+              <p class="text-xs text-slate-500 mb-2">
+                Drag players into Group 1 or Group 2. Each group must have exactly 3 players.
+              </p>
+              <div id="player-pool" class="flex flex-wrap gap-2 min-h-[60px]">
+                <!-- Player chips -->
+              </div>
+            </div>
+
+            <!-- Group 1 -->
+            <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">
+              <h3 class="text-sm font-semibold text-slate-800 mb-2">Group 1</h3>
+              <div id="group-1"
+                   class="group-dropzone min-h-[80px] border border-dashed border-mastersGreen/40 rounded-md p-2 flex flex-wrap gap-2 bg-white">
+              </div>
+            </div>
+
+            <!-- Group 2 -->
+            <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">
+              <h3 class="text-sm font-semibold text-slate-800 mb-2">Group 2</h3>
+              <div id="group-2"
+                   class="group-dropzone min-h-[80px] border border-dashed border-mastersGreen/40 rounded-md p-2 flex flex-wrap gap-2 bg-white">
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-end mt-4">
+            <button id="apply-groups"
+                    class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-mastersGold text-mastersGreen text-xs font-semibold shadow-sm hover:bg-mastersGold/90">
+              Apply Groups to Round & Scores
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Score Input Tab -->
+      <section id="tab-score-input" class="tab-panel hidden">
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6 space-y-6">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h2 class="text-xl font-semibold text-mastersGreen">Score Input</h2>
+              <p class="text-xs text-slate-600 mt-1">
+                Enter gross scores hole-by-hole for each player in the current round. All quota, net, and leaderboard math updates automatically.
+              </p>
+            </div>
+            <div class="flex items-center gap-3 text-xs">
+              <span class="inline-flex items-center rounded-full bg-mastersGreen/10 px-3 py-1 text-mastersGreen border border-mastersGreen/30">
+                Current Round: <span id="score-round-label" class="ml-1 font-semibold">1</span>
+              </span>
+              <span class="inline-flex items-center rounded-full bg-mastersGold/20 px-3 py-1 text-mastersGreen border border-mastersGold/40">
+                Course: <span id="score-course-label" class="ml-1 font-semibold">Diamond Springs</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Upload Scorecard (OCR) -->
+<!--           <div class="border border-dashed border-mastersGreen/40 rounded-lg p-4 flex flex-col md:flex-row items-center justify-between gap-4 bg-mastersGreen/5">
+            <div>
+              <h3 class="text-sm font-semibold text-mastersGreen">Upload Scorecard Image (OCR Preview)</h3>
+              <p class="text-xs text-slate-600 mt-1">
+                Future pipeline: drag-and-drop or upload scorecard photos to auto-populate gross scores via OCR.
+              </p>
+            </div>
+            <button id="ocr-upload-btn"
+                    class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-mastersGreen text-mastersCream text-xs font-semibold shadow-sm hover:bg-mastersGreen/90">
+              Simulate OCR Engine
+            </button>
+          </div> -->
+
+          <!-- Score Grid -->
+          <div id="score-grid" class="vertical-score-grid"></div>
+
+          <div class="flex justify-middle mt-4">
+            <span class="flex justify-middle" style="padding-left: 250px;"></span>
+            <button id="save-scores"
+                    class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-mastersGreen text-mastersCream text-xl font-semibold shadow-sm hover:bg-mastersGreen/90">
+              Save Scores to DB
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Side Games Tab -->
+      <section id="tab-side-games" class="tab-panel hidden">
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6 space-y-6">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h2 class="text-xl font-semibold text-mastersGreen">Side Games</h2>
+              <p class="text-xs text-slate-600 mt-1">
+                Daily Trio Match (highest quota in each group) and Net Skins with carryovers, computed within each 3-man group.
+              </p>
+            </div>
+            <div class="flex items-center gap-3 text-xs">
+              <span class="inline-flex items-center rounded-full bg-mastersGreen/10 px-3 py-1 text-mastersGreen border border-mastersGreen/30">
+                Round: <span id="side-round-label" class="ml-1 font-semibold">1</span>
+              </span>
+              <span class="inline-flex items-center rounded-full bg-mastersGold/20 px-3 py-1 text-mastersGreen border border-mastersGold/40">
+                Course: <span id="side-course-label" class="ml-1 font-semibold">Diamond Springs</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Daily Trio Match -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-mastersGreen/5 border border-mastersGreen/20 rounded-lg p-4">
+              <h3 class="text-sm font-semibold text-mastersGreen mb-2">Daily Trio Match</h3>
+              <p class="text-xs text-slate-600 mb-3">
+                Highest total quota points within each 3-man group wins the daily trio match.
+              </p>
+              <div class="space-y-3 text-xs">
+                <div>
+                  <h4 class="font-semibold text-slate-800 mb-1">Group 1 Winner</h4>
+                  <p id="trio-group1" class="text-slate-700"></p>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-slate-800 mb-1">Group 2 Winner</h4>
+                  <p id="trio-group2" class="text-slate-700"></p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Net Skins -->
+            <div class="bg-mastersGreen/5 border border-mastersGreen/20 rounded-lg p-4">
+              <h3 class="text-sm font-semibold text-mastersGreen mb-2">Net Skins (with Carryovers)</h3>
+              <p class="text-xs text-slate-600 mb-3">
+                Skins are awarded per hole within each group based on net scores. Ties carry over to the next hole.
+              </p>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                <div>
+                  <h4 class="font-semibold text-slate-800 mb-1">Group 1 Skins</h4>
+                  <ul id="skins-group1" class="space-y-1 list-disc list-inside text-slate-700"></ul>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-slate-800 mb-1">Group 2 Skins</h4>
+                  <ul id="skins-group2" class="space-y-1 list-disc list-inside text-slate-700"></ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-end mt-4">
+            <button id="refresh-side-games"
+                    class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-mastersGreen text-mastersCream text-xs font-semibold shadow-sm hover:bg-mastersGreen/90">
+              Recalculate Side Games
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- OCR Modal -->
+  <div id="ocr-modal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-xl shadow-lg max-w-md w-full p-6">
+      <h3 class="text-lg font-semibold text-mastersGreen mb-2">OCR Engine Pipeline Simulated</h3>
+      <p class="text-sm text-slate-700 mb-4">
+        This is a frontend simulation. The scorecard OCR pipeline is ready to be wired to your backend API
+        (e.g., Node/Express in <span class="font-mono text-xs bg-slate-100 px-1 rounded">server.js</span> using
+        <span class="font-mono text-xs bg-slate-100 px-1 rounded">db.js</span> and your PostgreSQL
+        <span class="font-mono text-xs bg-slate-100 px-1 rounded">golf_trip</span> database).
+      </p>
+      <button id="close-ocr-modal"
+              class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-mastersGreen text-mastersCream text-xs font-semibold shadow-sm hover:bg-mastersGreen/90">
+        Close
+      </button>
+    </div>
+  </div>
+
+  <script>
+    /************************************************************
+     * 1. DATA MODELS (Frontend Mirror of DB Seed Data)
+     ************************************************************/
+    const players = [
+      { id: "P1", name: "Sean", index: 7.2 },
+      { id: "P2", name: "Hoff", index: 11.4 },
+      { id: "P3", name: "Ty", index: 11.4 },
+      { id: "P4", name: "JD", index: 11.6 },
+      { id: "P5", name: "Dylan", index: 12.8 },
+      { id: "P6", name: "Norm", index: 25.0 }
+    ];
+
+    const courses = {
+      diamond_springs: {
+        name: "Diamond Springs",
+        par: 72,
+        pars: [4,4,4,5,3,4,3,5,4, 4,5,4,4,3,4,5,3,4],
+        hdcps: [8,14,6,16,10,2,18,12,4, 3,13,15,9,17,11,1,5,7],
+        rating: 71.1, slope: 130
+      },
+      harbor_shores: {
+        name: "Harbor Shores",
+        par: 71,
+        pars: [4,3,4,3,5,4,4,4,5, 5,3,4,3,4,5,4,3,4],
+        hdcps: [11,17,15,5,7,3,1,9,13, 12,18,10,16,4,8,2,14,6],
+        rating: 70.0, slope: 135
+      },
+      the_patriot: {
+        name: "The Patriot",
+        par: 72,
+        pars: [4,5,4,3,4,5,3,4,4, 4,4,3,5,4,3,4,4,5],
+        hdcps: [10,18,6,14,2,12,16,4,8, 3,13,15,11,7,9,1,5,17],
+        rating: 71.5, slope: 135
+      }
+    };
+
+    // App state (mirrors what you'd persist in PostgreSQL)
+    const appState = {
+      currentRound: 1,
+      currentCourseKey: "diamond_springs",
+      // roundSetup[round] = { courseKey, group1: [playerIds], group2: [playerIds] }
+      roundSetup: {}, 
+      scores: {}
+    };
+
+    async function loadRoundSetupFromDB(round) {
+      const res = await fetch(`/rounds/${round}/setup`);
+      const data = await res.json();
+
+      if (!appState.roundSetup) appState.roundSetup = {};
+
+      const group1 = data.groups
+        .filter(g => g.group_number === 1)
+        .map(g => g.player_id);
+
+      const group2 = data.groups
+        .filter(g => g.group_number === 2)
+        .map(g => g.player_id);
+
+      appState.roundSetup[round] = {
+        courseKey: data.courseKey,
+        group1,
+        group2
+      };
+    }
+
+    async function loadScoresFromDB(round) {
+      const res = await fetch(`/rounds/${round}/scores`);
+      const rows = await res.json();
+
+      const scores = {};
+
+      rows.forEach(row => {
+        if (!scores[row.player_id]) {
+          scores[row.player_id] = { gross: new Array(18).fill(null) };
+        }
+        scores[row.player_id].gross[row.hole_number - 1] = row.gross_score;
+      });
+
+      appState.scores[round] = scores;
+    }
+
+    async function saveScore(round, playerId, holeIndex, grossScore) {
+      await fetch(`/rounds/${round}/scores`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          player_id: playerId,
+          hole_number: holeIndex + 1,
+          gross_score: grossScore
+        })
+      });
+    }
+
+    async function saveRoundSetup(round) {
+      const setup = appState.roundSetup[round];
+
+      await fetch(`/rounds/${round}/setup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(setup)
+      });
+    }
+
+    async function saveRoundSetupToDB(round) {
+    const setup = appState.roundSetup[round];
+
+    await fetch(`/rounds/${round}/setup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(setup)
+    });
+  }
+
+    /************************************************************
+     * 2. CORE GOLF LOGIC ENGINE
+     ************************************************************/
+    function getCourseHandicap(index, course) {
+      return Math.round((index * (course.slope / 113)) + (course.rating - course.par));
+    }
+
+    function getTargetQuota(courseHandicap) {
+      return 36 - courseHandicap;
+    }
+
+    // Allocate handicap strokes per hole based on difficulty (hdcps)
+    function getHandicapAllocation(courseHandicap, course) {
+      const strokesPerHole = new Array(18).fill(0);
+      if (courseHandicap <= 0) return strokesPerHole;
+
+      const fullRounds = Math.floor(courseHandicap / 18);
+      const remainder = courseHandicap % 18;
+
+      // Everyone gets fullRounds strokes on every hole
+      for (let i = 0; i < 18; i++) {
+        strokesPerHole[i] = fullRounds;
+      }
+
+      // Remainder strokes go to easiest handicap numbers (1 is hardest)
+      // So we give strokes to holes with hdcps 1..remainder
+      for (let hcp = 1; hcp <= remainder; hcp++) {
+        const holeIndex = course.hdcps.indexOf(hcp);
+        if (holeIndex !== -1) {
+          strokesPerHole[holeIndex] += 1;
+        }
+      }
+
+      return strokesPerHole;
+    }
+
+    // Net score relative to par for a hole
+    function getNetRelativeToPar(gross, par, strokes) {
+      const netScore = gross - strokes;
+      return netScore - par; // relative to par
+    }
+
+    // Modified quota points for a single hole based on net relative to par
+    function getQuotaPointsForHole(netRelativeToPar) {
+      if (netRelativeToPar <= -2) return 8;   // Eagle or better
+      if (netRelativeToPar === -1) return 4;  // Birdie
+      if (netRelativeToPar === 0) return 2;   // Par
+      if (netRelativeToPar === 1) return 1;   // Bogey
+      if (netRelativeToPar === 2) return 0;   // Double
+      if (netRelativeToPar === 3) return -1;  // Triple
+      if (netRelativeToPar >= 4) return -2;   // Quad or worse
+      return 0;
+    }
+
+    // Compute quota points and daily score for a player in a round
+    function computePlayerRoundScore(round, playerId) {
+      const setup = appState.roundSetup[round];
+      if (!setup) return;
+
+      const course = courses[setup.courseKey];
+      const player = players.find(p => p.id === playerId);
+      if (!player || !course) return;
+
+      const courseHcp = getCourseHandicap(player.index, course);
+      const targetQuota = getTargetQuota(courseHcp);
+      const strokesPerHole = getHandicapAllocation(courseHcp, course);
+
+            // SAFETY: ensure score object exists
+      if (!appState.scores[round]) return;
+      if (!appState.scores[round][playerId]) return;
+
+      const grossScores = appState.scores[round][playerId].gross;
+
+      const hasAnyGross = grossScores.some(v => v !== null && !isNaN(v));
+      if (!hasAnyGross) return;
+
+
+      let totalQuotaPoints = 0;
+
+      for (let i = 0; i < 18; i++) {
+        const gross = grossScores[i];
+        if (gross == null || isNaN(gross)) continue;
+        const netRel = getNetRelativeToPar(gross, course.pars[i], strokesPerHole[i]);
+        totalQuotaPoints += getQuotaPointsForHole(netRel);
+      }
+      let trueScore = 0
+      if (totalQuotaPoints == 0){
+        trueScore = totalQuotaPoints;
+      }else{
+        trueScore = totalQuotaPoints - targetQuota;
+      }
+
+      const dailyScore = trueScore;
+      
+
+      appState.scores[round][playerId] = {
+        gross: grossScores,
+        quotaPoints: totalQuotaPoints,
+        dailyScore,
+        courseHcp,
+        targetQuota,
+        strokesPerHole
+      };
+    }
+
+    // Compute tournament leaderboard
+    function computeLeaderboard() {
+      const leaderboard = players.map(player => {
+        let r1 = appState.scores[1][player.id]?.dailyScore || 0;
+        let r2 = appState.scores[2][player.id]?.dailyScore || 0;
+        let r3 = appState.scores[3][player.id]?.dailyScore || 0;
+        const total = r1 + r2 + r3;
+        return { player, r1, r2, r3, total };
+      });
+
+      leaderboard.sort((a, b) => b.total - a.total);
+      return leaderboard;
+    }
+
+    /************************************************************
+     * 3. SIDE GAMES: DAILY TRIO MATCH & NET SKINS
+     ************************************************************/
+    function computeDailyTrioMatch(round) {
+      const setup = appState.roundSetup[round];
+      if (!setup) return { group1: null, group2: null };
+
+      const course = courses[setup.courseKey];
+
+      function groupWinner(group) {
+        let best = null;
+        group.forEach(pid => {
+          computePlayerRoundScore(round, pid);
+          const score = appState.scores[round][pid]?.quotaPoints || 0;
+          if (!best || score > best.score) {
+            best = { playerId: pid, score };
+          }
+        });
+        return best;
+      }
+
+      const g1 = groupWinner(setup.group1);
+      const g2 = groupWinner(setup.group2);
+
+      return {
+        group1: g1,
+        group2: g2
+      };
+    }
+
+    // Net skins with carryovers within a group
+    function computeNetSkins(round) {
+      const setup = appState.roundSetup[round];
+      if (!setup) return { group1: [], group2: [] };
+
+      const course = courses[setup.courseKey];
+
+      function groupSkins(group) {
+        // Ensure scores computed
+        group.forEach(pid => computePlayerRoundScore(round, pid));
+
+        const holes = 18;
+        let carry = 0;
+        const skins = [];
+
+        for (let h = 0; h < holes; h++) {
+          // Collect net scores for each player
+          const netScores = group.map(pid => {
+            const s = appState.scores[round][pid];
+            const gross = s?.gross[h];
+            if (gross == null || isNaN(gross)) return null;
+            const netRel = getNetRelativeToPar(gross, course.pars[h], s.strokesPerHole[h]);
+            const netScore = gross - s.strokesPerHole[h];
+            return { pid, netScore, netRel };
+          }).filter(x => x !== null);
+
+          if (netScores.length < group.length) {
+            // Incomplete hole, skip but keep carry
+            continue;
+          }
+
+          // Determine lowest net score
+          netScores.sort((a, b) => a.netScore - b.netScore);
+          const best = netScores[0];
+          const second = netScores[1];
+
+          if (best.netScore < second.netScore) {
+            // Winner, gets 1 + carry skins
+            const skinsWon = 1 + carry;
+            skins.push({
+              hole: h + 1,
+              playerId: best.pid,
+              skins: skinsWon
+            });
+            carry = 0;
+          } else {
+            // Tie, carry over
+            carry += 1;
+          }
+        }
+
+        return skins;
+      }
+
+      return {
+        group1: groupSkins(setup.group1),
+        group2: groupSkins(setup.group2)
+      };
+    }
+
+    /************************************************************
+     * 4. DB INTEGRATION STUBS (Node/Express + PostgreSQL)
+     *    These are ready to be wired to your server.js/db.js.
+     ************************************************************/
+    const api = {
+      async saveRoundSetup(round, setup) {
+        // Example POST to backend
+        try {
+          await fetch(`/rounds/${round}/setup`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(setup)
+          });
+        } catch (err) {
+          console.warn("Round setup save failed (frontend stub):", err);
+        }
+      },
+      async saveScores(round, scoresForRound) {
+        try {
+          await fetch(`/rounds/${round}/scores`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(scoresForRound)
+          });
+        } catch (err) {
+          console.warn("Scores save failed (frontend stub):", err);
+        }
+      },
+      async loadInitialData() {
+        // Optionally load from DB instead of hard-coded seed
+        // const res = await fetch("/api/init");
+        // const data = await res.json();
+        // hydrate appState here
+      }
+    };
+
+    /************************************************************
+     * 5. UI RENDERING HELPERS
+     ************************************************************/
+    function renderCourseInfo(courseKey) {
+      const course = courses[courseKey];
+      if (!course) return;
+
+      document.getElementById("course-name").textContent = course.name;
+      document.getElementById("course-par").textContent = `Par: ${course.par}`;
+      document.getElementById("course-rating").textContent = `Rating: ${course.rating}`;
+      document.getElementById("course-slope").textContent = `Slope: ${course.slope}`;
+
+      const frontPars = course.pars.slice(0, 9).join(" • ");
+      const backPars = course.pars.slice(9).join(" • ");
+      document.getElementById("course-pars-front").textContent = frontPars;
+      document.getElementById("course-pars-back").textContent = backPars;
+
+      const frontHdcps = course.hdcps.slice(0, 9).join(" • ");
+      const backHdcps = course.hdcps.slice(9).join(" • ");
+      document.getElementById("course-hdcps-front").textContent = frontHdcps;
+      document.getElementById("course-hdcps-back").textContent = backHdcps;
+
+      document.getElementById("score-course-label").textContent = course.name;
+      document.getElementById("side-course-label").textContent = course.name;
+    }
+
+    function renderPlayerPool() {
+      const poolEl = document.getElementById("player-pool");
+      poolEl.innerHTML = "";
+      players.forEach(p => {
+        const chip = document.createElement("div");
+        chip.className = "player-chip cursor-move inline-flex items-center gap-2 px-2 py-1 rounded-full bg-white border border-slate-300 text-xs shadow-sm";
+        chip.draggable = true;
+        chip.dataset.playerId = p.id;
+        chip.innerHTML = `<span class="font-semibold">${p.name}</span><span class="text-slate-500">(${p.index})</span>`;
+        poolEl.appendChild(chip);
+      });
+    }
+
+    function renderGroupsForRound(round) {
+      const setup = appState.roundSetup[round];
+      const group1El = document.getElementById("group-1");
+      const group2El = document.getElementById("group-2");
+      const poolEl = document.getElementById("player-pool");
+
+      group1El.innerHTML = "";
+      group2El.innerHTML = "";
+      poolEl.innerHTML = "";
+
+      const assigned = new Set([...setup.group1, ...setup.group2]);
+
+      players.forEach(p => {
+        const chip = document.createElement("div");
+        chip.className = "player-chip cursor-move inline-flex items-center gap-2 px-2 py-1 rounded-full bg-white border border-slate-300 text-xs shadow-sm";
+        chip.draggable = true;
+        chip.dataset.playerId = p.id;
+        chip.innerHTML = `<span class="font-semibold">${p.name}</span><span class="text-slate-500">(${p.index})</span>`;
+
+        if (setup.group1.includes(p.id)) {
+          group1El.appendChild(chip);
+        } else if (setup.group2.includes(p.id)) {
+          group2El.appendChild(chip);
+        } else {
+          poolEl.appendChild(chip);
+        }
+      });
+    }
+
+    function computePlayerInfo(playerId, courseKey) {
+      const player = players.find(p => p.id === playerId);
+      const course = courses[courseKey];
+
+      const courseHandicap = Math.round(
+        (player.index * (course.slope / 113)) + (course.rating - course.par)
+      );
+
+      const targetQuota = 36 - courseHandicap;
+
+      return {
+        name: player.name,
+        index: player.index,
+        courseHandicap,
+        targetQuota
+      };
+    }
+
+    function renderScoreGrid(round) {
+  const container = document.getElementById("score-grid");
+  container.innerHTML = "";
+
+  const setup = appState.roundSetup[round];
+  const playersInRound = [...setup.group1, ...setup.group2];
+
+  container.style.setProperty("--player-count", playersInRound.length);
+
+  // Header: Hole label + Player info columns
+  const holeHeader = document.createElement("div");
+  holeHeader.className = "hole-label";
+  //holeHeader.textContent = "Hole";
+  container.appendChild(holeHeader);
+
+  playersInRound.forEach(pid => {
+    const info = computePlayerInfo(pid, setup.courseKey);
+
+    const header = document.createElement("div");
+    header.className = "player-header";
+
+    header.innerHTML = `
+      <div class="bg-mastersGreen text-mastersCream player-info-box">
+        <strong>${info.name}</strong><br>
+        CH: ${info.courseHandicap}<br>
+        TQ: ${info.targetQuota}
+      </div>
+    `;
+
+    container.appendChild(header);
+  });
+
+  // Holes 1 → 18 (ascending)
+  for (let hole = 1; hole <= 18; hole++) {
+    const holeLabel = document.createElement("div");
+    holeLabel.className = "hole-label";
+    holeLabel.textContent = hole;
+    container.appendChild(holeLabel);
+
+    playersInRound.forEach(pid => {
+      const input = document.createElement("input");
+      input.type = "number";
+      input.min = 1;
+      input.max = 10;
+      input.className = "masters-input";
+      input.dataset.round = round;
+      input.dataset.playerId = pid;
+      input.dataset.holeIndex = hole - 1;
+
+      const scoreObj = appState.scores[round]?.[pid];
+      const gross = scoreObj?.gross[hole - 1] ?? null;
+
+      if (gross !== null) {
+        input.value = gross;
+
+        const par = courses[setup.courseKey].pars[hole - 1];
+        const scoreClass = getScoreClass(gross, par);
+        if (scoreClass) input.classList.add(scoreClass);
+      }
+
+      input.addEventListener("input", e => {
+        onGrossScoreChange(e);
+
+        const val = Number(e.target.value);
+        const par = courses[setup.courseKey].pars[hole - 1];
+
+        e.target.classList.remove("score-birdie", "score-par", "score-bogey", "score-double");
+
+        if (!isNaN(val)) {
+          const scoreClass = getScoreClass(val, par);
+          if (scoreClass) e.target.classList.add(scoreClass);
+        }
+      });
+
+      container.appendChild(input);
+    });
+  }
+}
+
+
+    function renderLeaderboard() {
+      const tbody = document.getElementById("leaderboard-body");
+      tbody.innerHTML = "";
+      const leaderboard = computeLeaderboard();
+
+      leaderboard.forEach(row => {
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-mastersGreen/3";
+
+        const nameTd = document.createElement("td");
+        nameTd.className = "px-3 py-2 text-xs font-semibold text-slate-800";
+        nameTd.textContent = row.player.name;
+        tr.appendChild(nameTd);
+
+        const indexTd = document.createElement("td");
+        indexTd.className = "px-3 py-2 text-center text-xs text-slate-700";
+        indexTd.textContent = row.player.index.toFixed(1);
+        tr.appendChild(indexTd);
+
+        const r1Td = document.createElement("td");
+        r1Td.className = "px-3 py-2 text-center text-xs";
+        r1Td.textContent = row.r1.toFixed(1);
+        tr.appendChild(r1Td);
+
+        const r2Td = document.createElement("td");
+        r2Td.className = "px-3 py-2 text-center text-xs";
+        r2Td.textContent = row.r2.toFixed(1);
+        tr.appendChild(r2Td);
+
+        const r3Td = document.createElement("td");
+        r3Td.className = "px-3 py-2 text-center text-xs";
+        r3Td.textContent = row.r3.toFixed(1);
+        tr.appendChild(r3Td);
+
+        const totalTd = document.createElement("td");
+        totalTd.className = "px-3 py-2 text-center text-xs font-semibold text-mastersGreen";
+        totalTd.textContent = row.total.toFixed(1);
+        tr.appendChild(totalTd);
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderSideGames(round) {
+      const trio = computeDailyTrioMatch(round);
+      const skins = computeNetSkins(round);
+
+      const group1WinnerEl = document.getElementById("trio-group1");
+      const group2WinnerEl = document.getElementById("trio-group2");
+
+      if (trio.group1) {
+        const p = players.find(x => x.id === trio.group1.playerId);
+        group1WinnerEl.textContent = `${p.name} with ${trio.group1.score.toFixed(1)} quota points`;
+      } else {
+        group1WinnerEl.textContent = "No winner yet (missing scores).";
+      }
+
+      if (trio.group2) {
+        const p = players.find(x => x.id === trio.group2.playerId);
+        group2WinnerEl.textContent = `${p.name} with ${trio.group2.score.toFixed(1)} quota points`;
+      } else {
+        group2WinnerEl.textContent = "No winner yet (missing scores).";
+      }
+
+      const skinsG1El = document.getElementById("skins-group1");
+      const skinsG2El = document.getElementById("skins-group2");
+      skinsG1El.innerHTML = "";
+      skinsG2El.innerHTML = "";
+
+      skins.group1.forEach(s => {
+        const li = document.createElement("li");
+        const p = players.find(x => x.id === s.playerId);
+        li.textContent = `Hole ${s.hole}: ${p.name} wins ${s.skins} skin(s)`;
+        skinsG1El.appendChild(li);
+      });
+
+      skins.group2.forEach(s => {
+        const li = document.createElement("li");
+        const p = players.find(x => x.id === s.playerId);
+        li.textContent = `Hole ${s.hole}: ${p.name} wins ${s.skins} skin(s)`;
+        skinsG2El.appendChild(li);
+      });
+    }
+
+    /************************************************************
+     * 6. EVENT HANDLERS
+     ************************************************************/
+    function onGrossScoreChange(e) {
+      const input = e.target;
+      const round = Number(input.dataset.round);
+      const playerId = input.dataset.playerId;
+      const holeIndex = Number(input.dataset.holeIndex);
+      const value = input.value ? Number(input.value) : null;
+
+      if (!appState.scores[round][playerId]) {
+        appState.scores[round][playerId] = {
+          gross: new Array(18).fill(null),
+          quotaPoints: 0,
+          dailyScore: 0
+        };
+      }
+
+      appState.scores[round][playerId].gross[holeIndex] = value;
+
+      computePlayerRoundScore(round, playerId);
+      updateScoreRowDisplay(round, playerId);
+      renderLeaderboard();
+      renderSideGames(round);
+      saveScore(round, playerId, holeIndex, value);
+
+    }
+
+    function updateScoreRowDisplay(round, playerId) {
+      const tbody = document.getElementById("score-grid-body");
+      const s = appState.scores[round][playerId];
+      if (!s) return;
+
+      tbody.querySelectorAll(`td[data-player-id="${playerId}"][data-round="${round}"]`).forEach(td => {
+        if (td.dataset.type === "quotaPoints") {
+          td.textContent = s.quotaPoints.toFixed(1);
+        } else if (td.dataset.type === "dailyScore") {
+          td.textContent = s.dailyScore.toFixed(1);
+        }
+      });
+    }
+
+    function setupTabs() {
+      const buttons = document.querySelectorAll(".tab-btn");
+      const panels = document.querySelectorAll(".tab-panel");
+
+      buttons.forEach(btn => {
+        btn.addEventListener("click", () => {
+          const tab = btn.dataset.tab;
+          buttons.forEach(b => {
+            b.classList.remove("bg-white", "border-slate-200", "text-mastersGreen");
+            b.classList.add("border-transparent", "text-slate-700");
+          });
+          btn.classList.add("bg-white", "border-slate-200", "text-mastersGreen");
+          btn.classList.remove("border-transparent", "text-slate-700");
+
+          panels.forEach(p => {
+            if (p.id === `tab-${tab}`) {
+              p.classList.remove("hidden");
+            } else {
+              p.classList.add("hidden");
+            }
+          });
+        });
+      });
+    }
+
+    function setupDragAndDrop() {
+      const dropzones = document.querySelectorAll(".group-dropzone, #player-pool");
+
+      document.addEventListener("dragstart", e => {
+        const chip = e.target.closest(".player-chip");
+        if (!chip) return;
+        e.dataTransfer.setData("text/plain", chip.dataset.playerId);
+        e.dataTransfer.effectAllowed = "move";
+      });
+
+      dropzones.forEach(zone => {
+        zone.addEventListener("dragover", e => {
+          e.preventDefault();
+          zone.classList.add("bg-mastersGreen/5");
+        });
+        zone.addEventListener("dragleave", () => {
+          zone.classList.remove("bg-mastersGreen/5");
+        });
+        zone.addEventListener("drop", e => {
+          e.preventDefault();
+          zone.classList.remove("bg-mastersGreen/5");
+          const pid = e.dataTransfer.getData("text/plain");
+          if (!pid) return;
+
+          const existingChip = document.querySelector(`.player-chip[data-player-id="${pid}"]`);
+          if (existingChip && existingChip.parentElement !== zone) {
+            zone.appendChild(existingChip);
+          }
+        });
+      });
+    }
+
+    function setupRoundControls() {
+      const roundSelect = document.getElementById("round-select");
+      const courseSelect = document.getElementById("course-select");
+
+      roundSelect.addEventListener("change", () => {
+        const round = Number(roundSelect.value);
+        appState.currentRound = round;
+        const setup = appState.roundSetup[round];
+        appState.currentCourseKey = setup.courseKey;
+        courseSelect.value = setup.courseKey;
+
+        document.getElementById("score-round-label").textContent = round;
+        document.getElementById("side-round-label").textContent = round;
+
+        renderCourseInfo(setup.courseKey);
+        renderGroupsForRound(round);
+        renderScoreGrid(round);
+        renderLeaderboard();
+        renderSideGames(round);
+      });
+
+      courseSelect.addEventListener("change", () => {
+        const courseKey = courseSelect.value;
+        appState.currentCourseKey = courseKey;
+        const round = appState.currentRound;
+        appState.roundSetup[round].courseKey = courseKey;
+
+        renderCourseInfo(courseKey);
+        renderScoreGrid(round);
+        renderLeaderboard();
+        renderSideGames(round);
+      });
+
+      document.getElementById("apply-groups").addEventListener("click", () => {
+        const round = appState.currentRound;
+        const group1El = document.getElementById("group-1");
+        const group2El = document.getElementById("group-2");
+
+        const group1 = Array.from(group1El.querySelectorAll(".player-chip")).map(chip => chip.dataset.playerId);
+        const group2 = Array.from(group2El.querySelectorAll(".player-chip")).map(chip => chip.dataset.playerId);
+
+        if (group1.length !== 3 || group2.length !== 3) {
+          alert("Each group must have exactly 3 players.");
+          return;
+        }
+
+        appState.roundSetup[round].group1 = group1;
+        appState.roundSetup[round].group2 = group2;
+
+        renderScoreGrid(round);
+        renderLeaderboard();
+        renderSideGames(round);
+      });
+
+      document.getElementById("save-round-setup").addEventListener("click", async () => {
+        const round = appState.currentRound;
+        await saveRoundSetupToDB(round);
+        alert(`Round ${round} setup saved to DB.`);
+      });
+
+    }
+
+    function setupScoreControls() {
+      document.getElementById("save-scores").addEventListener("click", async () => {
+        const round = appState.currentRound;
+        const scoresForRound = appState.scores[round];
+        await api.saveScores(round, scoresForRound);
+        alert(`Scores for Round ${round} saved to DB (stubbed API call).`);
+      });
+    }
+
+    function setupSideGamesControls() {
+      document.getElementById("refresh-side-games").addEventListener("click", () => {
+        const round = appState.currentRound;
+        renderSideGames(round);
+      });
+    }
+
+    function setupOCRModal() {
+      const btn = document.getElementById("ocr-upload-btn");
+      const modal = document.getElementById("ocr-modal");
+      const closeBtn = document.getElementById("close-ocr-modal");
+
+      btn.addEventListener("click", () => {
+        modal.classList.remove("hidden");
+      });
+
+      closeBtn.addEventListener("click", () => {
+        modal.classList.add("hidden");
+      });
+
+      modal.addEventListener("click", e => {
+        if (e.target === modal) {
+          modal.classList.add("hidden");
+        }
+      });
+    }
+
+
+
+
+    /************************************************************
+     * 7. INITIALIZATION
+     ************************************************************/
+     async function init() {
+        setupTabs();
+        setupDragAndDrop();
+        setupRoundControls();
+        setupScoreControls();
+        setupSideGamesControls();
+        //setupOCRModal();
+
+        // Load round setup from DB
+        await loadRoundSetupFromDB(1);
+        await loadRoundSetupFromDB(2);
+        await loadRoundSetupFromDB(3);
+ 
+          // Load scores second
+        await loadScoresFromDB(1);
+        await loadScoresFromDB(2);
+        await loadScoresFromDB(3);
+
+        const round = appState.currentRound;
+
+/*         await loadRoundSetupFromDB(round);
+        await loadScoresFromDB(round); */
+        const roundSelect = document.getElementById("round-select");
+        const courseSelect = document.getElementById("course-select");
+        const setup = appState.roundSetup[round];
+        appState.currentCourseKey = setup.courseKey;
+        courseSelect.value = setup.courseKey
+
+        renderCourseInfo(setup.courseKey);
+        renderGroupsForRound(round);
+        renderScoreGrid(round);
+        renderLeaderboard();
+        renderSideGames(round);
+      }
+
+
+    document.addEventListener("DOMContentLoaded", () => {
+  init();
+});
+
+  </script>
+</body>
+</html>
