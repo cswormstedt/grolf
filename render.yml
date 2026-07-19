@@ -4,16 +4,7 @@ services:
     env: docker
     plan: free
     dockerfilePath: ./Dockerfile
-    envVars:
-      - key: PGHOST
-        value: grolf-db
-      - key: PGUSER
-        value: postgres
-      - key: PGPASSWORD
-        value: postgres
-      - key: PGDATABASE
-        value: grolf
-    healthCheckPath: /
+
 
 databases:
   - name: grolf-db
