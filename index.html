@@ -476,12 +476,14 @@
       });
     }
 
-    async function saveRoundSetupToDB(round) {
-        // Ensure round setup is loaded
+
+    async function saveRoundSetup(round) {
+            // Ensure round setup is loaded
       if (!appState.roundSetup[round]) {
         appState.roundSetup[round] = await fetchRoundSetup(round);
       }
-      const setup = appState.roundSetup[round];
+    const setup = appState.roundSetup[round];
+
       console.log(setup)
       await fetch(`/rounds/${round}/setup`, {
         method: "POST",
@@ -492,17 +494,6 @@
           group2: setup.group2
         })
       });
-    }
-
-    async function saveRoundSetup(round) {
-    const updates = [];
-    const setup = appState.roundSetup[round];
-
-     await fetch(`/rounds/${round}/groups`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ updates })
-  });
   }
 
     /************************************************************
@@ -1144,11 +1135,11 @@
           alert("Each group must have exactly 3 players.");
           return;
         }
-/*         saveGroups(group1);
-        saveGroups(group2); */
+
         appState.roundSetup[round].group1 = group1;
         appState.roundSetup[round].group2 = group2;
         
+        saveRoundSetup(round);
         renderScoreGrid(round);
         renderLeaderboard();
         renderSideGames(round);
@@ -1156,7 +1147,7 @@
 
       document.getElementById("save-round-setup").addEventListener("click", async () => {
         const round = appState.round;
-        await saveRoundSetupToDB(round);
+        await api.saveRoundSetup(round);
         alert(`Round ${appState.currentRound} setup saved to DB.`);
       });
 
