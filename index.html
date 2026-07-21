@@ -94,13 +94,9 @@
                 </select>
               </div>
               <div>
-                <label class="block text-xs font-medium text-slate-700 mb-1">Course</label>
-                <select id="course-select"
-                        class="border border-slate-300 rounded-md px-3 py-1 text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-mastersGreen/40">
-                  <li value="diamond_springs">Diamond Springs</li>
-                  <li value="harbor_shores">Harbor Shores</li>
-                  <li value="the_patriot">The Patriot</li>
-                </select>
+                <span class="inline-flex items-center rounded-full bg-mastersGreen/10 px-3 py-1 text-mastersGreen border border-mastersGreen/30">
+                <span id="course-label" class="ml-1 font-semibold">1</span>
+              </span>
               </div>
             </div>
       </div>
@@ -1080,7 +1076,7 @@
 
     function setupRoundControls() {
       const roundSelect = document.getElementById("round-select");
-      const courseSelect = document.getElementById("course-select");
+      
 
       roundSelect.addEventListener("change", () => {
         const round = Number(roundSelect.value);
@@ -1089,6 +1085,7 @@
         appState.currentCourseKey = setup.courseKey;
         courseSelect.value = setup.courseKey;
 
+        document.getElementById("course-label").textContent = appState.currentCourseKey 
         document.getElementById("score-round-label").textContent = round;
         document.getElementById("side-round-label").textContent = round;
 
@@ -1234,10 +1231,10 @@
 /*         await loadRoundSetupFromDB(round);
         await loadScoresFromDB(round); */
         const roundSelect = document.getElementById("round-select");
-        const courseSelect = document.getElementById("course-select");
+       
         const setup = appState.roundSetup[round];
         appState.currentCourseKey = setup.courseKey;
-        courseSelect.value = setup.courseKey
+        
 
         renderCourseInfo(setup.courseKey);
         renderGroupsForRound(round);
