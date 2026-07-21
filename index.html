@@ -483,10 +483,11 @@
       }
       const setup = appState.roundSetup[round];
       console.log(setup)
-      await fetch(`/rounds/${round}/groups`, {
+      await fetch(`/rounds/${round}/setup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          courseKey: setup.courseKey,
           group1: setup.group1,
           group2: setup.group2
         })
@@ -1197,8 +1198,8 @@
       });
     }
 
-    async function fetchRoundSetup(roundId) {
-  const res = await fetch(`/rounds/${roundId}/groups`);
+  async function fetchRoundSetup(roundId) {
+  const res = await fetch(`/rounds/${roundId}/setup`);
   const data = await res.json();
 
   const group1 = data.groups
