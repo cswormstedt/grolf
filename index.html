@@ -83,12 +83,26 @@
         </p>
       </div>
       <div class="flex items-center gap-3">
-   <!--      <span class="inline-flex items-center rounded-full bg-mastersGreen/10 px-3 py-1 text-xs font-medium text-mastersGreen border border-mastersGreen/30">
-          PostgreSQL: <span class="ml-1 font-semibold">golf_trip</span>
-        </span>
-        <span class="inline-flex items-center rounded-full bg-mastersGold/20 px-3 py-1 text-xs font-medium text-mastersGreen border border-mastersGold/40">
-          Frontend: Single-page • Tailwind • Vanilla JS
-        </span> -->
+        <div class="flex flex-wrap gap-3">
+              <div>
+                <label class="block text-xs font-medium text-slate-700 mb-1">Round</label>
+                <select id="round-select"
+                        class="border border-slate-300 rounded-md px-3 py-1 text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-mastersGreen/40">
+                  <option value="1">Round 1</option>
+                  <option value="2">Round 2</option>
+                  <option value="3">Round 3</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-700 mb-1">Course</label>
+                <select id="course-select"
+                        class="border border-slate-300 rounded-md px-3 py-1 text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-mastersGreen/40">
+                  <li value="diamond_springs">Diamond Springs</li>
+                  <li value="harbor_shores">Harbor Shores</li>
+                  <li value="the_patriot">The Patriot</li>
+                </select>
+              </div>
+            </div>
       </div>
     </header>
 
@@ -158,33 +172,10 @@
             <div class="space-y-2">
               <h2 class="text-xl font-semibold text-mastersGreen">Round Setup</h2>
               <p class="text-xs text-slate-600">
-                Choose round, course, and assign players into two 3-man groups. These assignments drive score input and side games.
+                assign players into two 3-man groups. These assignments drive score input and side games.
               </p>
             </div>
-            <div class="flex flex-wrap gap-3">
-              <div>
-                <label class="block text-xs font-medium text-slate-700 mb-1">Round</label>
-                <select id="round-select"
-                        class="border border-slate-300 rounded-md px-3 py-1 text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-mastersGreen/40">
-                  <option value="1">Round 1</option>
-                  <option value="2">Round 2</option>
-                  <option value="3">Round 3</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-xs font-medium text-slate-700 mb-1">Course</label>
-                <select id="course-select"
-                        class="border border-slate-300 rounded-md px-3 py-1 text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-mastersGreen/40">
-                  <option value="diamond_springs">Diamond Springs</option>
-                  <option value="harbor_shores">Harbor Shores</option>
-                  <option value="the_patriot">The Patriot</option>
-                </select>
-              </div>
-              <!-- <button id="save-round-setup"
-                      class="mt-4 md:mt-0 inline-flex items-center gap-2 px-4 py-2 rounded-md bg-mastersGreen text-mastersCream text-xs font-semibold shadow-sm hover:bg-mastersGreen/90">
-                Save Round Setup (DB)
-              </button> -->
-            </div>
+            
           </div>
 
           <!-- Course Info -->
