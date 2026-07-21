@@ -871,9 +871,9 @@ input[type=number]::-webkit-outer-spin-button {
 
     playersInRound.forEach(pid => {
       const input = document.createElement("input");
-      input.type = "number";
-      input.min = 1;
-      input.max = 10;
+      input.type = "text";               // allows custom keypad behavior
+      input.inputMode = "numeric";       // triggers iPhone number pad
+      input.pattern = "[0-9]*";          // ensures only digits
       input.step = 1; // ← THIS MAKES IT A REAL NUMBER PICKER
       input.className = "masters-input";
       input.dataset.round = round;
