@@ -477,8 +477,12 @@
     }
 
     async function saveRoundSetupToDB(round) {
+        // Ensure round setup is loaded
+      if (!appState.roundSetup[round]) {
+        appState.roundSetup[round] = await fetchRoundSetup(round);
+      }
       const setup = appState.roundSetup[round];
-
+      console.log(setup)
       await fetch(`/rounds/${round}/groups`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1193,6 +1197,25 @@
       });
     }
 
+    async function fetchRoundSetup(roundId) {
+  const res = await fetch(`/rounds/${roundId}/setup`);
+  const data = await res.json();
+
+  const group1 = data.groups
+    .filter(g => g.group_number === 1)
+    .map(g => g.player_id);
+
+  const group2 = data.groups
+    .filter(g => g.group_number === 2)
+    .map(g => g.player_id);
+
+  return {
+    courseKey: data.courseKey,
+    group1,
+    group2
+  };
+}
+
 
 
 
@@ -1208,6 +1231,11 @@
         //setupOCRModal();
 
         // Load round setup from DB
+
+        await fetchRoundSetup(1);
+        await fetchRoundSetup(2);
+        await fetchRoundSetup(3);
+
         await loadRoundSetupFromDB(1);
         await loadRoundSetupFromDB(2);
         await loadRoundSetupFromDB(3);
