@@ -479,9 +479,6 @@
 
     async function saveGroupSetup(round) {
         console.log("called inside save group")    // Ensure round setup is loaded
-      if (!appState.roundSetup[round]) {
-        appState.roundSetup[round] = await fetchRoundSetup(round);
-      }
     const setup = appState.roundSetup[round];
 
       console.log(setup)
