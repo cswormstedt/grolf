@@ -477,8 +477,8 @@
     }
 
 
-    async function saveRoundSetup(round) {
-            // Ensure round setup is loaded
+    async function saveGroupSetup(round) {
+        console.log("called inside save group")    // Ensure round setup is loaded
       if (!appState.roundSetup[round]) {
         appState.roundSetup[round] = await fetchRoundSetup(round);
       }
@@ -1124,6 +1124,7 @@
       });
 
       document.getElementById("apply-groups").addEventListener("click", () => {
+        console.log("clicked save round")
         const round = appState.currentRound;
         const group1El = document.getElementById("group-1");
         const group2El = document.getElementById("group-2");
@@ -1139,15 +1140,18 @@
         appState.roundSetup[round].group1 = group1;
         appState.roundSetup[round].group2 = group2;
         
-        saveRoundSetup(round);
+        saveGroupSetup(round);
+        console.log("called save group")
         renderScoreGrid(round);
         renderLeaderboard();
         renderSideGames(round);
       });
 
       document.getElementById("save-round-setup").addEventListener("click", async () => {
+        console.log("clicked save round")
         const round = appState.round;
-        await api.saveRoundSetup(round);
+        saveGroupSetup(round);
+        console.log("called save group")
         alert(`Round ${appState.currentRound} setup saved to DB.`);
       });
 
