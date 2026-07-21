@@ -70,6 +70,16 @@
   .score-par { background-color: #e8f5e9; }        /* very light green */
   .score-bogey { background-color: #ffe0b2; }      /* light orange */
   .score-double { background-color: #ffccbc; }     /* deeper orange */
+
+  input[type=number] {
+  -moz-appearance: textfield;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  opacity: 1;
+}
+
   </style>
   
   
@@ -864,6 +874,7 @@
       input.type = "number";
       input.min = 1;
       input.max = 10;
+      input.step = 1; // ← THIS MAKES IT A REAL NUMBER PICKER
       input.className = "masters-input";
       input.dataset.round = round;
       input.dataset.playerId = pid;
