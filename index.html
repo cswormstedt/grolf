@@ -1083,7 +1083,7 @@
         appState.currentRound = round;
         const setup = appState.roundSetup[round];
         appState.currentCourseKey = setup.courseKey;
-        courseSelect.value = setup.courseKey;
+        
 
         document.getElementById("course-label").textContent = appState.currentCourseKey 
         document.getElementById("score-round-label").textContent = round;
@@ -1091,18 +1091,6 @@
 
         renderCourseInfo(setup.courseKey);
         renderGroupsForRound(round);
-        renderScoreGrid(round);
-        renderLeaderboard();
-        renderSideGames(round);
-      });
-
-      courseSelect.addEventListener("change", () => {
-        const courseKey = courseSelect.value;
-        appState.currentCourseKey = courseKey;
-        const round = appState.currentRound;
-        appState.roundSetup[round].courseKey = courseKey;
-
-        renderCourseInfo(courseKey);
         renderScoreGrid(round);
         renderLeaderboard();
         renderSideGames(round);
