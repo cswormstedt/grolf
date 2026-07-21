@@ -1198,7 +1198,7 @@
     }
 
     async function fetchRoundSetup(roundId) {
-  const res = await fetch(`/rounds/${roundId}/setup`);
+  const res = await fetch(`/rounds/${roundId}/groups`);
   const data = await res.json();
 
   const group1 = data.groups
