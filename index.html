@@ -34,9 +34,10 @@
     }
   
     .hole-label {
+      width: 5px;
       font-weight: bold;
       text-align: right;
-      padding-right: 10px;
+      padding-right: 5px;
       font-size: 14px;
     }
   
@@ -871,10 +872,11 @@ input[type=number]::-webkit-outer-spin-button {
 
     playersInRound.forEach(pid => {
       const input = document.createElement("input");
-      input.type = "text";               // allows custom keypad behavior
-      input.inputMode = "numeric";       // triggers iPhone number pad
-      input.pattern = "[0-9]*";          // ensures only digits
-      input.step = 1; // ← THIS MAKES IT A REAL NUMBER PICKER
+      input.type = "text";
+      input.inputMode = "numeric";
+      input.pattern = "[0-9]*";
+      input.min = 1;
+      input.max = 10;
       input.className = "masters-input";
       input.dataset.round = round;
       input.dataset.playerId = pid;
