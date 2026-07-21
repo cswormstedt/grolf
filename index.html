@@ -476,24 +476,28 @@
       });
     }
 
-    async function saveRoundSetup(round) {
+    async function saveRoundSetupToDB(round) {
       const setup = appState.roundSetup[round];
 
-      await fetch(`/rounds/${round}/setup`, {
+      await fetch(`/rounds/${round}/groups`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(setup)
+        body: JSON.stringify({
+          group1: setup.group1,
+          group2: setup.group2
+        })
       });
     }
 
-    async function saveRoundSetupToDB(round) {
+    async function saveRoundSetup(round) {
+    const updates = [];
     const setup = appState.roundSetup[round];
 
-    await fetch(`/rounds/${round}/setup`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(setup)
-    });
+     await fetch(`/rounds/${round}/groups`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ updates })
+  });
   }
 
     /************************************************************
@@ -1135,19 +1139,20 @@
           alert("Each group must have exactly 3 players.");
           return;
         }
-
+/*         saveGroups(group1);
+        saveGroups(group2); */
         appState.roundSetup[round].group1 = group1;
         appState.roundSetup[round].group2 = group2;
-
+        
         renderScoreGrid(round);
         renderLeaderboard();
         renderSideGames(round);
       });
 
       document.getElementById("save-round-setup").addEventListener("click", async () => {
-        const round = appState.currentRound;
+        const round = appState.round;
         await saveRoundSetupToDB(round);
-        alert(`Round ${round} setup saved to DB.`);
+        alert(`Round ${appState.currentRound} setup saved to DB.`);
       });
 
     }
