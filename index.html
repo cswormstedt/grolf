@@ -109,7 +109,7 @@ input[type=number]::-webkit-outer-spin-button {
               </select>
             </div>
             <div>
-              <span class="inline-flex items-center rounded-full bg-mastersGreen/10 px-3 py-1 text-mastersGreen border border-mastersGreen/30"></span>
+              <span class="inline-flex items-center rounded-full bg-mastersGreen/10 px-3 py-1 text-mastersGreen border border-mastersGreen/30">
               <span id="course-label" class="ml-1 font-semibold">1</span>
             </div>
          </div>
@@ -193,7 +193,10 @@ input[type=number]::-webkit-outer-spin-button {
             <div class="bg-mastersGreen/5 border border-mastersGreen/20 rounded-lg p-3">
               <h3 class="font-semibold text-mastersGreen mb-1">Course Details</h3>
               <p id="course-name" class="text-sm font-medium"></p>
-              <select id="tee-select" class="masters-select"></select>
+              <div class="round-setup-row">
+                <label for="tee-select">Tee:</label>
+                <select id="tee-select" class="masters-select"></select>
+              </div>
               <p id="course-par" class="mt-1"></p>
               <p id="course-rating" class="mt-1"></p>
               <p id="course-slope" class="mt-1"></p>
@@ -458,6 +461,8 @@ input[type=number]::-webkit-outer-spin-button {
         group1,
         group2
       };
+
+      loadRoundSetupUI(round);
     }
 
     async function loadScoresFromDB(round) {
@@ -1149,18 +1154,25 @@ input[type=number]::-webkit-outer-spin-button {
       });
 
       document.getElementById("save-round-setup").addEventListener("click", async () => {
-      const round = appState.round;
-      const courseId = appState.roundSetup[round].courseKey;
-      const teeId = document.getElementById("tee-select").value;
+        const round = appState.round;
+        const setup = appState.roundSetup[round];
 
-      await fetch(`/rounds/${round}/apply-tee`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ courseId, teeId })
+        const courseId = setup.courseKey;
+        const teeId = document.getElementById("tee-select").value;
+
+        // Save tee selection into appState
+        setup.teeId = teeId;
+
+        // Apply tee rating/slope to course
+        await fetch(`/rounds/${round}/apply-tee`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ courseId, teeId })
+        });
+
+        alert(`Tee applied for Round ${round}.`);
       });
 
-      alert(`Tee applied for Round ${round}.`);
-    });
 
      /*  document.getElementById("save-round-setup").addEventListener("click", async () => {
         console.log("clicked save round")
@@ -1223,7 +1235,8 @@ input[type=number]::-webkit-outer-spin-button {
   return {
     courseKey: data.courseKey,
     group1,
-    group2
+    group2,
+    teeId: data.teeId || null   // NEW
   };
 }
 
@@ -1240,7 +1253,25 @@ async function loadTeesForCourse(courseId) {
     opt.textContent = `${tee.name} (${tee.yardage} yds)`;
     select.appendChild(opt);
   });
+
+  // Auto-select first tee
+  if (tees.length > 0) {
+    select.value = tees[0].id;
+  }
 }
+async function loadRoundSetupUI(round) {
+  const setup = appState.roundSetup[round];
+  const courseId = setup.courseKey;
+
+  // Load tees for this course
+  await loadTeesForCourse(courseId);
+
+  // If round already has a tee selection, set it
+  if (setup.teeId) {
+    document.getElementById("tee-select").value = setup.teeId;
+  }
+}
+
 
 
 
@@ -1263,6 +1294,8 @@ async function loadTeesForCourse(courseId) {
         await fetchRoundSetup(2);
         await fetchRoundSetup(3);
 
+        
+
         await loadRoundSetupFromDB(1);
         await loadRoundSetupFromDB(2);
         await loadRoundSetupFromDB(3);
@@ -1281,6 +1314,7 @@ async function loadTeesForCourse(courseId) {
         const setup = appState.roundSetup[round];
         appState.currentCourseKey = setup.courseKey;
         const course = courses[appState.currentCourseKey];
+
 
         document.getElementById("course-label").textContent = course.name; 
 

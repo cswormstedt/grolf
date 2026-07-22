@@ -149,7 +149,6 @@ app.post('/rounds/:id/setup', async (req, res) => {
   res.json({ success: true });
 });
 
-//load tees
 app.get("/courses/:courseId/tees", async (req, res) => {
   const { courseId } = req.params;
 
@@ -169,24 +168,39 @@ app.get("/courses/:courseId/tees", async (req, res) => {
   }
 });
 
-//save tees rate and slope to course
-app.post("/courses/:courseId/tees", async (req, res) => {
-  const { courseId, rating, slope } = req.params;
+app.post("/rounds/:roundId/apply-tee", async (req, res) => {
+  const { roundId } = req.params;
+  const { courseId, teeId } = req.body;
 
   try {
-    const result = await db.query(
-      `UPDATE courses
-       SET rating = $2, slope = $3
-       WHERE course_id = $1`,
-      [courseId, rating, slope]
+    // Get tee rating/slope
+    const tee = await db.query(
+      `SELECT rating, slope FROM tees WHERE id = $1`,
+      [teeId]
     );
 
-    res.json(result.rows);
+    if (tee.rows.length === 0) {
+      return res.status(404).json({ error: "Tee not found" });
+    }
+
+    const { rating, slope } = tee.rows[0];
+
+    // Apply tee values to course
+    await db.query(
+      `UPDATE courses
+       SET rating = $1, slope = $2
+       WHERE id = $3`,
+      [rating, slope, courseId]
+    );
+
+    res.json({ success: true, rating, slope });
+
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to load tees" });
+    res.status(500).json({ error: "Failed to apply tee" });
   }
 });
+
 
 
 
