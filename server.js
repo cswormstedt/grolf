@@ -24,10 +24,6 @@ app.get('/players', async (req, res) => {
 // ---------------------------------------------------------
 // GET courses
 // ---------------------------------------------------------
-app.get('/courses', async (req, res) => {
-  const result = await db.query('SELECT * FROM courses ORDER BY id');
-  res.json(result.rows);
-});
 
 // ---------------------------------------------------------
 // GET holes for a course
@@ -201,25 +197,36 @@ app.post("/rounds/:roundId/apply-tee", async (req, res) => {
   }
 });
 
-app.get("/courses/:courseId", async (req, res) => {
-  const { courseId } = req.params;
-  const { rating, slope } = req.body;
+app.get("/courses", async (req, res) => {
+  const { rating, slope } = req.query;
+
+  let sql = `SELECT * FROM courses`;
+  const params = [];
+  const conditions = [];
+
+  if (rating) {
+    params.push(Number(rating));
+    conditions.push(`rating = $${params.length}`);
+  }
+
+  if (slope) {
+    params.push(Number(slope));
+    conditions.push(`slope = $${params.length}`);
+  }
+
+  if (conditions.length > 0) {
+    sql += ` WHERE ` + conditions.join(" AND ");
+  }
 
   try {
-    const result = await db.query(
-      `SELECT rating, slope
-       FROM courses
-       WHERE course_id = $1, rating = $2, slope = $3
-       ORDER BY yardage DESC`,
-      [courseId,rating, slope]
-    );
-
+    const result = await db.query(sql, params);
     res.json(result.rows);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to load tees" });
+    res.status(500).json({ error: "Failed to load courses" });
   }
 });
+
 
 
 
