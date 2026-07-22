@@ -211,35 +211,40 @@ app.post("/rounds/:roundId/apply-tee", async (req, res) => {
 app.get("/courses", async (req, res) => {
   const { rating, slope } = req.query;
 
-  let sql = `SELECT * FROM courses`;
+  let sql = `
+    SELECT c.id, c.name, c.par,
+           t.id AS tee_id, t.name AS tee_name,
+           t.rating AS rating, t.slope AS slope
+    FROM courses c
+    JOIN tees t ON t.course_id = c.id
+  `;
+
   const params = [];
   const conditions = [];
 
   if (rating) {
     params.push(Number(rating));
-    conditions.push(`rating = $${params.length}`);
+    conditions.push(`t.rating = $${params.length}`);
   }
 
   if (slope) {
     params.push(Number(slope));
-    conditions.push(`slope = $${params.length}`);
+    conditions.push(`t.slope = $${params.length}`);
   }
 
   if (conditions.length > 0) {
     sql += ` WHERE ` + conditions.join(" AND ");
   }
 
-console.log(sql);
-
   try {
     const result = await db.query(sql, params);
-    console.log(result);
     res.json(result.rows);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to load courses" });
   }
 });
+
 
 
 
