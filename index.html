@@ -1156,7 +1156,7 @@ input[type=number]::-webkit-outer-spin-button {
       });
 
       document.getElementById("save-round-setup").addEventListener("click", async () => {
-        const round = appState.round;
+        const round = appState.currentRound;
         if (!appState.roundSetup[round]) {
           appState.roundSetup[round] = await fetchRoundSetup(round);
         }
