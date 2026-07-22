@@ -764,9 +764,7 @@ input[type=number]::-webkit-outer-spin-button {
       loadTeesForCourse(course);
       document.getElementById("course-name").textContent = course.name;
       document.getElementById("course-par").textContent = `Par: ${course.par}`;
-      document.getElementById("course-rating").textContent = `Rating: ${course.rating}`;
-      document.getElementById("course-slope").textContent = `Slope: ${course.slope}`;
-
+      
       const frontPars = course.pars.slice(0, 9).join(" • ");
       const backPars = course.pars.slice(9).join(" • ");
       document.getElementById("course-pars-front").textContent = frontPars;
@@ -1243,8 +1241,7 @@ input[type=number]::-webkit-outer-spin-button {
   return {
     courseKey: data.courseKey,
     group1,
-    group2,
-    teeId: data.teeId || null   // NEW
+    group2
   };
 }
 
@@ -1262,22 +1259,44 @@ async function loadTeesForCourse(courseId) {
     select.appendChild(opt);
   });
 
-  // Auto-select first tee
+    select.value = tees[0].id
+ /*  // Auto-select first tee
   if (tees.length > 0) {
     select.value = tees[0].id;
-  }
+      document.getElementById("course-rating").textContent = `Rating: ${tees[0].rating}`;
+      document.getElementById("course-slope").textContent = `Slope: ${tees[0].slope}`;
+
+  } */
+
 }
+
+async function setTeeForCourse(rating, slope, courseId) {
+  const res = await fetch(`/courses/${courseId}`);
+  const courseRS = await res.json();
+
+  return {
+    rating: courseRS.rating,
+    slope: courseRS.slope
+  }
+
+}
+
 async function loadRoundSetupUI(round) {
   const setup = appState.roundSetup[round];
   const courseId = setup.courseKey;
+  const course = courses[courseId];
+  const slope = course.slope
+  const rating = course.rating
 
   // Load tees for this course
   await loadTeesForCourse(courseId);
+  await setTeeForCourse(rating, slope, courseId);
 
   // If round already has a tee selection, set it
-  if (setup.teeId) {
-    document.getElementById("tee-select").value = setup.teeId;
-  }
+
+    document.getElementById("course-rating").textContent = `Rating: ${rating}`;
+    document.getElementById("course-slope").textContent = `Slope: ${slope}`;
+
 }
 
 
@@ -1301,8 +1320,6 @@ async function loadRoundSetupUI(round) {
         await fetchRoundSetup(1);
         await fetchRoundSetup(2);
         await fetchRoundSetup(3);
-
-        
 
         await loadRoundSetupFromDB(1);
         await loadRoundSetupFromDB(2);
