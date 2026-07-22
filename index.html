@@ -1320,12 +1320,13 @@ async function getCoursesByRatingSlope(rating, slope) {
       console.log(rating);
       console.log(slope);
         const select = document.getElementById("tee-select");
-        select.value = appState.roundSetup[round].teeId
+        select.value = appState.roundSetup[round].teeId;
+        console.log(appState.roundSetup[round].teeId);
       const c = await getCoursesByRatingSlope(rating, slope);
       console.log(c);
       
-      const r = c.rating
-      const s = c.slope
+      const r = c[0].rating;
+      const s = c[0].slope;
       console.log(r);
       console.log(s);
 
