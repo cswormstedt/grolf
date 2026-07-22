@@ -758,7 +758,6 @@ input[type=number]::-webkit-outer-spin-button {
       
       const course = courses[setup.courseKey];
       if (!course) return;
-      console.log(course.courseKey);
       console.log(setup.courseKey);
       loadTeesForCourse(setup.courseKey);
         const slope = course.slope;
@@ -1264,7 +1263,6 @@ input[type=number]::-webkit-outer-spin-button {
 }
 
 async function loadTeesForCourse(courseId) {
-  comsole.log(courseId);
   const res = await fetch(`/courses/${courseId}/tees`);
   const tees = await res.json();
   console.log(tees);
