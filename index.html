@@ -1253,8 +1253,10 @@ async function loadTeesForCourse(courseId) {
   });
 
   // Auto-select first tee if none chosen yet
-  if (!appState.roundSetup[appState.round].teeId && tees.length > 0) {
+  if (!appState.teeId && tees.length > 0) {
     select.value = tees[0].id;
+  }else{
+    select.value = appState.teeId;
   }
 
 }
@@ -1312,9 +1314,9 @@ async function loadRoundSetupUI(round) {
         await fetchRoundSetup(2);
         await fetchRoundSetup(3);
 
-        await loadTeesForCourse(1);
-        await loadTeesForCourse(2);
-        await loadTeesForCourse(3);
+        await loadTeesForCourse('diamond_springs');
+        await loadTeesForCourse('harbor_shores');
+        await loadTeesForCourse('the_patriot');
 
         await loadRoundSetupFromDB(1);
         await loadRoundSetupFromDB(2);
