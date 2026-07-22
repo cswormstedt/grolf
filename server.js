@@ -149,6 +149,45 @@ app.post('/rounds/:id/setup', async (req, res) => {
   res.json({ success: true });
 });
 
+//load tees
+app.get("/courses/:courseId/tees", async (req, res) => {
+  const { courseId } = req.params;
+
+  try {
+    const result = await db.query(
+      `SELECT id, name, yardage, rating, slope
+       FROM tees
+       WHERE course_id = $1
+       ORDER BY yardage DESC`,
+      [courseId]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to load tees" });
+  }
+});
+
+//save tees rate and slope to course
+app.post("/courses/:courseId/tees", async (req, res) => {
+  const { courseId, rating, slope } = req.params;
+
+  try {
+    const result = await db.query(
+      `UPDATE courses
+       SET rating = $2, slope = $3
+       WHERE course_id = $1`,
+      [courseId, rating, slope]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to load tees" });
+  }
+});
+
 
 
 // ---------------------------------------------------------

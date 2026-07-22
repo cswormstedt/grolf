@@ -100,20 +100,19 @@ input[type=number]::-webkit-outer-spin-button {
       </div>
       <div class="flex items-center gap-3">
         <div class="flex flex-wrap gap-3">
-              <div>
-                <select id="round-select"
-                        class="border border-slate-300 rounded-md px-3 py-1 text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-mastersGreen/40">
-                  <option value="1">Round 1</option>
-                  <option value="2">Round 2</option>
-                  <option value="3">Round 3</option>
-                </select>
-              </div>
-              <div>
-                <span class="inline-flex items-center rounded-full bg-mastersGreen/10 px-3 py-1 text-mastersGreen border border-mastersGreen/30">
-                <span id="course-label" class="ml-1 font-semibold">1</span>
-              </span>
-              </div>
+            <div>
+              <select id="round-select"
+                      class="border border-slate-300 rounded-md px-3 py-1 text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-mastersGreen/40">
+                <option value="1">Round 1</option>
+                <option value="2">Round 2</option>
+                <option value="3">Round 3</option>
+              </select>
             </div>
+            <div>
+              <span class="inline-flex items-center rounded-full bg-mastersGreen/10 px-3 py-1 text-mastersGreen border border-mastersGreen/30"></span>
+              <span id="course-label" class="ml-1 font-semibold">1</span>
+            </div>
+         </div>
       </div>
     </header>
 
@@ -194,9 +193,15 @@ input[type=number]::-webkit-outer-spin-button {
             <div class="bg-mastersGreen/5 border border-mastersGreen/20 rounded-lg p-3">
               <h3 class="font-semibold text-mastersGreen mb-1">Course Details</h3>
               <p id="course-name" class="text-sm font-medium"></p>
+              <select id="tee-select" class="masters-select"></select>
               <p id="course-par" class="mt-1"></p>
               <p id="course-rating" class="mt-1"></p>
               <p id="course-slope" class="mt-1"></p>
+
+               <button id="save-round-setup"
+                      class="mt-4 md:mt-0 inline-flex items-center gap-2 px-4 py-2 rounded-md bg-mastersGreen text-mastersCream text-xs font-semibold shadow-sm hover:bg-mastersGreen/90">
+                Save Tee Box
+              </button>
             </div>
             <div class="bg-mastersGreen/5 border border-mastersGreen/20 rounded-lg p-3">
               <h3 class="font-semibold text-mastersGreen mb-1">Front 9 Pars</h3>
@@ -1106,6 +1111,7 @@ input[type=number]::-webkit-outer-spin-button {
         const setup = appState.roundSetup[round];
         appState.currentCourseKey = setup.courseKey;
         const course = courses[appState.currentCourseKey];
+        loadTeesForCourse(course.name)
 
         document.getElementById("course-label").textContent = course.name; 
         document.getElementById("score-round-label").textContent = round;
@@ -1141,6 +1147,20 @@ input[type=number]::-webkit-outer-spin-button {
         renderLeaderboard();
         renderSideGames(round);
       });
+
+      document.getElementById("save-round-setup").addEventListener("click", async () => {
+      const round = appState.round;
+      const courseId = appState.roundSetup[round].courseKey;
+      const teeId = document.getElementById("tee-select").value;
+
+      await fetch(`/rounds/${round}/apply-tee`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ courseId, teeId })
+      });
+
+      alert(`Tee applied for Round ${round}.`);
+    });
 
      /*  document.getElementById("save-round-setup").addEventListener("click", async () => {
         console.log("clicked save round")
@@ -1206,6 +1226,22 @@ input[type=number]::-webkit-outer-spin-button {
     group2
   };
 }
+
+async function loadTeesForCourse(courseId) {
+  const res = await fetch(`/courses/${courseId}/tees`);
+  const tees = await res.json();
+
+  const select = document.getElementById("tee-select");
+  select.innerHTML = "";
+
+  tees.forEach(tee => {
+    const opt = document.createElement("option");
+    opt.value = tee.id;
+    opt.textContent = `${tee.name} (${tee.yardage} yds)`;
+    select.appendChild(opt);
+  });
+}
+
 
 
 
