@@ -1241,7 +1241,7 @@ input[type=number]::-webkit-outer-spin-button {
 async function loadTeesForCourse(courseId) {
   const res = await fetch(`/courses/${courseId}/tees`);
   const tees = await res.json();
-  console.log(tees);
+  console.log(appState.teeId);
   const select = document.getElementById("tee-select");
   select.innerHTML = "";
 
