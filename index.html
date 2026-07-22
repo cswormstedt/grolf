@@ -1114,7 +1114,9 @@ input[type=number]::-webkit-outer-spin-button {
 
         appState.currentRound = round;
 
-        appState.roundSetup[round] = fetchRoundSetup(round);
+         fetchRoundSetup(round).then(f => {
+          appState.roundSetup[round] = f;
+         });
 
         const setup = appState.roundSetup[round];
         console.log("set up");
