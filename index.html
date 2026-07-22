@@ -72,9 +72,6 @@
   .score-bogey { background-color: #ffe0b2; }      /* light orange */
   .score-double { background-color: #ffccbc; }     /* deeper orange */
 
-  input[type=number] {
-  -moz-appearance: textfield;
-}
 
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {
@@ -1270,15 +1267,14 @@ async function loadTeesForCourse(courseId) {
 
 }
 
-async function setTeeForCourse(rating, slope, courseId) {
-  const res = await fetch(`/courses/${courseId}`);
-  const courseRS = await res.json();
+async function getCoursesByRatingSlope(rating, slope) {
+  const params = new URLSearchParams();
 
-  return {
-    rating: courseRS.rating,
-    slope: courseRS.slope
-  }
+  if (rating) params.append("rating", rating);
+  if (slope) params.append("slope", slope);
 
+  const res = await fetch(`/courses?${params.toString()}`);
+  return await res.json();
 }
 
 async function loadRoundSetupUI(round) {
@@ -1293,8 +1289,8 @@ async function loadRoundSetupUI(round) {
 
   // Load tees for this course
   await loadTeesForCourse(courseId);
-  await setTeeForCourse(rating, slope, courseId);
-
+  const c = await getCoursesByRatingSlope(rating, slope);
+  console.log(c)
   // If round already has a tee selection, set it
 
     document.getElementById("course-rating").textContent = `Rating: ${rating}`;
