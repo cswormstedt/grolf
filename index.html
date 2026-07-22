@@ -1113,6 +1113,8 @@ input[type=number]::-webkit-outer-spin-button {
       roundSelect.addEventListener("change", () => {
         const round = Number(roundSelect.value);
         appState.currentRound = round;
+        appState.roundSetup[round] = fetchRoundSetup(round);
+        loadRoundSetupUI(round);
         const setup = appState.roundSetup[round];
         appState.currentCourseKey = setup.courseKey;
         const course = courses[appState.currentCourseKey];
@@ -1155,6 +1157,9 @@ input[type=number]::-webkit-outer-spin-button {
 
       document.getElementById("save-round-setup").addEventListener("click", async () => {
         const round = appState.round;
+        if (!appState.roundSetup[round]) {
+          appState.roundSetup[round] = await fetchRoundSetup(round);
+        }
         const setup = appState.roundSetup[round];
 
         const courseId = setup.courseKey;
