@@ -201,6 +201,26 @@ app.post("/rounds/:roundId/apply-tee", async (req, res) => {
   }
 });
 
+app.get("/courses/:courseId", async (req, res) => {
+  const { courseId } = req.params;
+  const { rating, slope } = req.body;
+
+  try {
+    const result = await db.query(
+      `SELECT rating, slope
+       FROM courses
+       WHERE course_id = $1, rating = $2, slope = $3
+       ORDER BY yardage DESC`,
+      [courseId,rating, slope]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to load tees" });
+  }
+});
+
 
 
 

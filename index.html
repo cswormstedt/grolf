@@ -1285,8 +1285,11 @@ async function loadRoundSetupUI(round) {
   const setup = appState.roundSetup[round];
   const courseId = setup.courseKey;
   const course = courses[courseId];
-  const slope = course.slope
-  const rating = course.rating
+  const slope = course.slope;
+  const rating = course.rating;
+  console.log(slope);
+  console.log(rating);
+  console.log(courseId)
 
   // Load tees for this course
   await loadTeesForCourse(courseId);
