@@ -100,9 +100,21 @@ app.get('/rounds/:id/setup', async (req, res) => {
     [roundId]
   );
 
+  // NEW: fetch Blue tee
+  const blueTeeResult = await db.query(
+    `SELECT id, name, yardage, rating, slope
+     FROM tees
+     WHERE course_id = $1 AND name = 'Blue'
+     LIMIT 1`,
+    [courseId]
+  );
+
+
+
   res.json({
     courseKey: courseResult.rows[0]?.course_id,
-    groups: groupsResult.rows
+    groups: groupsResult.rows,
+    blueTee: blueTeeResult.rows[0] || null   // NEW
   });
 });
 
