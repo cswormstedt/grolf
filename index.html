@@ -1323,12 +1323,15 @@ async function getCoursesByRatingSlope(rating, slope) {
         select.value = appState.roundSetup[round].teeId
       const c = await getCoursesByRatingSlope(rating, slope);
       console.log(c);
-      console.log(c["rating"])
-      // If round already has a tee selection, set it
+      
+      const r = c.rating
+      const s = c.slope
+      console.log(r);
+      console.log(s);
 
 
-       document.getElementById("course-rating").textContent = `Rating: ${c.rating}`;
-       document.getElementById("course-slope").textContent = `Slope: ${c.slope}`;
+       document.getElementById("course-rating").textContent = `Rating: ${r}`;
+       document.getElementById("course-slope").textContent = `Slope: ${s}`;
 
         document.getElementById("course-label").textContent = course.name; 
 
