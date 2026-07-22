@@ -107,7 +107,7 @@ app.get('/rounds/:id/setup', async (req, res) => {
      INNER JOIN rounds
      ON rounds.course_id = tees.course_id
      WHERE rounds.id = $1 AND tees.name = 'Blue'`,
-    [courseId]
+    [roundId]
   );
 
   res.json({
