@@ -104,7 +104,9 @@ app.get('/rounds/:id/setup', async (req, res) => {
   const blueTeeResult = await db.query(
     `SELECT id, name, yardage, rating, slope
      FROM tees
-     WHERE course_id = $1 AND name = 'Blue'
+     INNER JOIN rounds
+     ON rounds.id = tees.course_id
+     WHERE rounds.id = $1 AND tees.name = 'Blue'
      LIMIT 1`,
     [courseId]
   );
