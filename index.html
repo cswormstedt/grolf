@@ -770,10 +770,11 @@ input[type=number]::-webkit-outer-spin-button {
         getCoursesByRatingSlope(rating, slope).then(c =>{
             const r = c[0].rating;
             const s = c[0].slope;
-        });
-
         document.getElementById("course-rating").textContent = `Rating: ${r}`;
         document.getElementById("course-slope").textContent = `Slope: ${s}`;
+        });
+
+
       document.getElementById("course-name").textContent = course.name;
       document.getElementById("course-par").textContent = `Par: ${course.par}`;
 
