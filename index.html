@@ -456,7 +456,8 @@ input[type=number]::-webkit-outer-spin-button {
       appState.roundSetup[round] = {
         courseKey: data.courseKey,
         group1,
-        group2
+        group2,
+        teeId: null,
       };
 
       loadRoundSetupUI(round);
@@ -761,7 +762,7 @@ input[type=number]::-webkit-outer-spin-button {
       if (!course) return;
       
       const select = document.getElementById("tee-select");
-      select.value = 
+      select.value = setup.teeId
       document.getElementById("course-name").textContent = course.name;
       document.getElementById("course-par").textContent = `Par: ${course.par}`;
       
@@ -1123,7 +1124,7 @@ input[type=number]::-webkit-outer-spin-button {
         document.getElementById("side-round-label").textContent = round;
         
         
-        renderCourseInfo(setup.courseKey);
+        renderCourseInfo(setup);
         renderGroupsForRound(round);
         renderScoreGrid(round);
         renderLeaderboard();
@@ -1176,18 +1177,9 @@ input[type=number]::-webkit-outer-spin-button {
 
         alert(`Tee applied for Round ${round}.`);
 
-        renderCourseInfo(courseId);
+        renderCourseInfo(setup);
       });
 
-
-     /*  document.getElementById("save-round-setup").addEventListener("click", async () => {
-        console.log("clicked save round")
-        const round = appState.round;
-        saveGroupSetup(round);
-        console.log("called save group")
-        alert(`Round ${appState.currentRound} setup saved to DB.`);
-      });
- */
     }
 
     function setupScoreControls() {
@@ -1259,6 +1251,11 @@ async function loadTeesForCourse(courseId) {
     select.appendChild(opt);
   });
 
+  // Auto-select first tee if none chosen yet
+  if (!appState.roundSetup[appState.round].teeId && tees.length > 0) {
+    select.value = tees[0].id;
+  }
+
 }
 
 async function getCoursesByRatingSlope(rating, slope) {
@@ -1286,8 +1283,7 @@ async function loadRoundSetupUI(round) {
   const c = await getCoursesByRatingSlope(rating, slope);
   console.log(c)
   // If round already has a tee selection, set it
-    const select = document.getElementById("tee-select");
-    select.value = 1;
+
     document.getElementById("course-rating").textContent = `Rating: ${rating}`;
     document.getElementById("course-slope").textContent = `Slope: ${slope}`;
 
