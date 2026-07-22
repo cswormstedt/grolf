@@ -758,7 +758,22 @@ input[type=number]::-webkit-outer-spin-button {
       
       const course = courses[setup.courseKey];
       if (!course) return;
-      loadTeesForCourse(course.courseKey)
+
+      loadTeesForCourse(course.courseKey);
+        const slope = course.slope;
+        const rating = course.rating;
+
+        const select = document.getElementById("tee-select");
+        select.value = appState.roundSetup[round].teeId;
+        console.log(appState.roundSetup[round].teeId);
+
+        getCoursesByRatingSlope(rating, slope).then(c =>{
+            const r = c[0].rating;
+            const s = c[0].slope;
+        });
+
+        document.getElementById("course-rating").textContent = `Rating: ${r}`;
+        document.getElementById("course-slope").textContent = `Slope: ${s}`;
       document.getElementById("course-name").textContent = course.name;
       document.getElementById("course-par").textContent = `Par: ${course.par}`;
 
@@ -1130,21 +1145,6 @@ input[type=number]::-webkit-outer-spin-button {
         document.getElementById("course-label").textContent = course.name; 
         document.getElementById("score-round-label").textContent = round;
         document.getElementById("side-round-label").textContent = round;
-
-        const slope = course.slope;
-        const rating = course.rating;
-
-        const select = document.getElementById("tee-select");
-        select.value = appState.roundSetup[round].teeId;
-        console.log(appState.roundSetup[round].teeId);
-
-        getCoursesByRatingSlope(rating, slope).then(c =>{
-            const r = c[0].rating;
-            const s = c[0].slope;
-        });
-
-        document.getElementById("course-rating").textContent = `Rating: ${r}`;
-        document.getElementById("course-slope").textContent = `Slope: ${s}`;
         
         
         renderCourseInfo(setup);
