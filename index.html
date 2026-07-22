@@ -1118,7 +1118,7 @@ input[type=number]::-webkit-outer-spin-button {
         const setup = appState.roundSetup[round];
         appState.currentCourseKey = setup.courseKey;
         const course = courses[appState.currentCourseKey];
-        loadTeesForCourse(course.name)
+        loadTeesForCourse(appState.currentCourseKey)
 
         document.getElementById("course-label").textContent = course.name; 
         document.getElementById("score-round-label").textContent = round;
