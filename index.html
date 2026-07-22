@@ -1265,6 +1265,7 @@ input[type=number]::-webkit-outer-spin-button {
 async function loadTeesForCourse(courseId) {
   const res = await fetch(`/courses/${courseId}/tees`);
   const tees = await res.json();
+  console.log(tees);
   const select = document.getElementById("tee-select");
   select.innerHTML = "";
 
@@ -1315,10 +1316,6 @@ async function getCoursesByRatingSlope(rating, slope) {
         await fetchRoundSetup(1);
         await fetchRoundSetup(2);
         await fetchRoundSetup(3);
-
-/*         await loadTeesForCourse('diamond_springs');
-        await loadTeesForCourse('harbor_shores');
-        await loadTeesForCourse('the_patriot'); */
 
         await loadRoundSetupFromDB(1);
         await loadRoundSetupFromDB(2);
