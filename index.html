@@ -758,7 +758,7 @@ input[type=number]::-webkit-outer-spin-button {
       
       const course = courses[setup.courseKey];
       if (!course) return;
-      
+      loadTeesForCourse(course.courseKey)
       document.getElementById("course-name").textContent = course.name;
       document.getElementById("course-par").textContent = `Par: ${course.par}`;
        const slope = course.slope;
@@ -1276,29 +1276,12 @@ async function getCoursesByRatingSlope(rating, slope) {
   if (rating) params.append("rating", rating);
   if (slope) params.append("slope", slope);
 
+  console.log(params)
+
   const res = await fetch(`/courses?${params.toString()}`);
+
   return await res.json();
 }
-
-async function loadRoundSetupUI(round) {
-  const setup = appState.roundSetup[round];
-  const courseId = setup.courseKey;
-  const course = courses[courseId];
-  const slope = course.slope;
-  const rating = course.rating;
-
-  // Load tees for this course
-  //await loadTeesForCourse(courseId);
-  const c = await getCoursesByRatingSlope(rating, slope);
-  console.log(c)
-  // If round already has a tee selection, set it
-
-
-    document.getElementById("course-rating").textContent = `Rating: ${rating}`;
-    document.getElementById("course-slope").textContent = `Slope: ${slope}`;
-
-}
-
 
 
 
@@ -1321,9 +1304,9 @@ async function loadRoundSetupUI(round) {
         await fetchRoundSetup(2);
         await fetchRoundSetup(3);
 
-        await loadTeesForCourse('diamond_springs');
+/*         await loadTeesForCourse('diamond_springs');
         await loadTeesForCourse('harbor_shores');
-        await loadTeesForCourse('the_patriot');
+        await loadTeesForCourse('the_patriot'); */
 
         await loadRoundSetupFromDB(1);
         await loadRoundSetupFromDB(2);
