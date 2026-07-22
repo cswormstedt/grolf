@@ -102,21 +102,18 @@ app.get('/rounds/:id/setup', async (req, res) => {
 
   // NEW: fetch Blue tee
   const blueTeeResult = await db.query(
-    `SELECT tees.id, name, yardage, rating, slope
+    `SELECT tees.id
      FROM tees
      INNER JOIN rounds
      ON rounds.course_id = tees.course_id
-     WHERE rounds.id = $1 AND tees.name = 'Blue'
-     LIMIT 1`,
+     WHERE rounds.id = $1 AND tees.name = 'Blue'`,
     [courseId]
   );
-
-
 
   res.json({
     courseKey: courseResult.rows[0]?.course_id,
     groups: groupsResult.rows,
-    blueTee: blueTeeResult.rows[0] || null   // NEW
+    blueTee: blueTeeResult.rows[0]?.id  // NEW
   });
 });
 

@@ -442,7 +442,7 @@ input[type=number]::-webkit-outer-spin-button {
     async function loadRoundSetupFromDB(round) {
       const res = await fetch(`/rounds/${round}/setup`);
       const data = await res.json();
-
+      console.log(data)
       if (!appState.roundSetup) appState.roundSetup = {};
 
       const group1 = data.groups
@@ -457,7 +457,7 @@ input[type=number]::-webkit-outer-spin-button {
         courseKey: data.courseKey,
         group1,
         group2,
-        teeId: data.blueTee.id,
+        teeId: data.blueTee,
       };
 
       loadRoundSetupUI(round);
