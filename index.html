@@ -459,8 +459,6 @@ input[type=number]::-webkit-outer-spin-button {
         group2,
         teeId: data.blueTee,
       };
-
-      loadRoundSetupUI(round);
     }
 
     async function loadScoresFromDB(round) {
@@ -762,9 +760,21 @@ input[type=number]::-webkit-outer-spin-button {
       if (!course) return;
       
       const select = document.getElementById("tee-select");
-      select.value = setup.teeId
+      select.value = appState.roundSetup[round].teeId
       document.getElementById("course-name").textContent = course.name;
       document.getElementById("course-par").textContent = `Par: ${course.par}`;
+       const slope = course.slope;
+       const rating = course.rating;
+
+  // Load tees for this course
+  //await loadTeesForCourse(courseId);
+  const c = getCoursesByRatingSlope(rating, slope);
+  console.log(c.rating);
+  // If round already has a tee selection, set it
+
+
+    document.getElementById("course-rating").textContent = `Rating: ${c.rating}`;
+    document.getElementById("course-slope").textContent = `Slope: ${c.slope}`;
       
       const frontPars = course.pars.slice(0, 9).join(" • ");
       const backPars = course.pars.slice(9).join(" • ");
@@ -1113,7 +1123,6 @@ input[type=number]::-webkit-outer-spin-button {
         const round = Number(roundSelect.value);
         appState.currentRound = round;
         appState.roundSetup[round] = fetchRoundSetup(round);
-        loadRoundSetupUI(round);
         const setup = appState.roundSetup[round];
         appState.currentCourseKey = setup.courseKey;
         const course = courses[appState.currentCourseKey];
@@ -1253,11 +1262,11 @@ async function loadTeesForCourse(courseId) {
   });
 
   // Auto-select first tee if none chosen yet
-  if (!appState.teeId && tees.length > 0) {
+/*   if (!appState.teeId && tees.length > 0) {
     select.value = tees[0].id;
-  }else{
-    select.value = appState.teeId;
-  }
+  }else{ */
+    
+  // }
 
 }
 
@@ -1277,15 +1286,13 @@ async function loadRoundSetupUI(round) {
   const course = courses[courseId];
   const slope = course.slope;
   const rating = course.rating;
-  console.log(slope);
-  console.log(rating);
-  console.log(courseId)
 
   // Load tees for this course
   //await loadTeesForCourse(courseId);
   const c = await getCoursesByRatingSlope(rating, slope);
   console.log(c)
   // If round already has a tee selection, set it
+
 
     document.getElementById("course-rating").textContent = `Rating: ${rating}`;
     document.getElementById("course-slope").textContent = `Slope: ${slope}`;
