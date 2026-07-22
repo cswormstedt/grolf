@@ -1107,13 +1107,23 @@ input[type=number]::-webkit-outer-spin-button {
       
 
       roundSelect.addEventListener("change", () => {
+        console.log("on change event");
+        console.log(roundSelect.value);
+
         const round = Number(roundSelect.value);
+
         appState.currentRound = round;
+
         appState.roundSetup[round] = fetchRoundSetup(round);
+
         const setup = appState.roundSetup[round];
+        console.log("set up");
+        console.log(setup);
         appState.currentCourseKey = setup.courseKey;
-        const course = courses[appState.currentCourseKey];
         
+        const course = courses[appState.currentCourseKey];
+        console.log("course");
+        console.log(course)
 
         document.getElementById("course-label").textContent = course.name; 
         document.getElementById("score-round-label").textContent = round;
@@ -1237,7 +1247,6 @@ input[type=number]::-webkit-outer-spin-button {
 async function loadTeesForCourse(courseId) {
   const res = await fetch(`/courses/${courseId}/tees`);
   const tees = await res.json();
-  console.log(appState.teeId);
   const select = document.getElementById("tee-select");
   select.innerHTML = "";
 
@@ -1317,22 +1326,17 @@ async function getCoursesByRatingSlope(rating, slope) {
 
       // Load tees for this course
       //await loadTeesForCourse(courseId);
-      console.log(rating);
-      console.log(slope);
+
         const select = document.getElementById("tee-select");
         select.value = appState.roundSetup[round].teeId;
         console.log(appState.roundSetup[round].teeId);
-      const c = await getCoursesByRatingSlope(rating, slope);
-      console.log(c);
-      
-      const r = c[0].rating;
-      const s = c[0].slope;
-      console.log(r);
-      console.log(s);
 
+        const c = await getCoursesByRatingSlope(rating, slope);
+        const r = c[0].rating;
+        const s = c[0].slope;
 
-       document.getElementById("course-rating").textContent = `Rating: ${r}`;
-       document.getElementById("course-slope").textContent = `Slope: ${s}`;
+        document.getElementById("course-rating").textContent = `Rating: ${r}`;
+        document.getElementById("course-slope").textContent = `Slope: ${s}`;
 
         document.getElementById("course-label").textContent = course.name; 
 
