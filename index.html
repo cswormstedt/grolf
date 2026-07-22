@@ -766,6 +766,8 @@ input[type=number]::-webkit-outer-spin-button {
 
       // Load tees for this course
       //await loadTeesForCourse(courseId);
+      console.log(rating);
+      console.log(slope);
       const c = getCoursesByRatingSlope(rating, slope);
       console.log(c.rating);
       // If round already has a tee selection, set it
@@ -1129,9 +1131,7 @@ input[type=number]::-webkit-outer-spin-button {
         document.getElementById("course-label").textContent = course.name; 
         document.getElementById("score-round-label").textContent = round;
         document.getElementById("side-round-label").textContent = round;
-        
-        const select = document.getElementById("tee-select");
-        select.value = appState.roundSetup[round].teeId
+      
         
         renderCourseInfo(setup);
         renderGroupsForRound(round);
@@ -1276,8 +1276,6 @@ async function getCoursesByRatingSlope(rating, slope) {
   if (rating) params.append("rating", rating);
   if (slope) params.append("slope", slope);
 
-  console.log(params)
-
   const res = await fetch(`/courses?${params.toString()}`);
 
   return await res.json();
@@ -1326,7 +1324,8 @@ async function getCoursesByRatingSlope(rating, slope) {
         const setup = appState.roundSetup[round];
         appState.currentCourseKey = setup.courseKey;
         const course = courses[appState.currentCourseKey];
-
+        const select = document.getElementById("tee-select");
+        select.value = appState.roundSetup[round].teeId
 
         document.getElementById("course-label").textContent = course.name; 
 

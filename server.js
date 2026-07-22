@@ -229,8 +229,11 @@ app.get("/courses", async (req, res) => {
     sql += ` WHERE ` + conditions.join(" AND ");
   }
 
+console.log(sql);
+
   try {
     const result = await db.query(sql, params);
+    console.log(result);
     res.json(result.rows);
   } catch (err) {
     console.error(err);
