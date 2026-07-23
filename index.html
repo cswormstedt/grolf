@@ -1465,7 +1465,7 @@ document.getElementById("beer-tbody").addEventListener("input", (e) => {
     (appState.beers[2][playerId] ?? 0) +
     (appState.beers[3][playerId] ?? 0);
 
-  if (appState.beers[round][playerId] == "P2"){
+  if (appState.beers[round][playerId].toString == "P2"){
       total = Math.round(total/.5);
   };
 
