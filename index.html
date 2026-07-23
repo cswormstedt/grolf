@@ -612,12 +612,16 @@ input[type=number]::-webkit-outer-spin-button {
       console.log(courseHcp);
       const targetQuota = getTargetQuota(courseHcp);
       const strokesPerHole = getHandicapAllocation(courseHcp, course);
-
+      console.log("before safety check on round and players");
             // SAFETY: ensure score object exists
       if (!appState.scores[round]) return;
       if (!appState.scores[round][playerId]) return;
 
+      console.log("after safety check on round and players");
+
       const grossScores = appState.scores[round][playerId].gross;
+
+      console.log(grossScores);
 
       const hasAnyGross = grossScores.some(v => v !== null && !isNaN(v));
       if (!hasAnyGross) return;
@@ -920,12 +924,12 @@ function renderScoreGrid(round) {
 
         const hcpTd = document.createElement("td");
         hcpTd.className = "px-2 py-2 text-center text-xs text-slate-700";
-        hcpTd.textContent = s.courseHcp ?? getCourseHandicap(player.index, course);
+        hcpTd.textContent = s?.courseHcp ?? getCourseHandicap(player.index, course);
         tr.appendChild(hcpTd);
 
         const quotaTd = document.createElement("td");
         quotaTd.className = "px-2 py-2 text-center text-xs text-slate-700";
-        quotaTd.textContent = s.targetQuota ?? getTargetQuota(getCourseHandicap(player.index, course));
+        quotaTd.textContent = s?.targetQuota ?? getTargetQuota(getCourseHandicap(player.index, course));
         tr.appendChild(quotaTd);
 
         for (let i = 0; i < 18; i++) {
@@ -935,7 +939,7 @@ function renderScoreGrid(round) {
           input.type = "number";
           input.min = "1";
           input.className = "w-12 px-1 py-0.5 text-xs border border-slate-300 rounded bg-slate-50 focus:outline-none focus:ring-1 focus:ring-mastersGreen/50";
-          input.value = s.gross?.[i] ?? "";
+          input.value = s?.gross?.[i] ?? "";
           input.dataset.round = round;
           input.dataset.playerId = pid;
           input.dataset.holeIndex = i;
@@ -945,7 +949,7 @@ function renderScoreGrid(round) {
 }
         const quotaPtsTd = document.createElement("td");
         quotaPtsTd.className = "px-2 py-2 text-center text-xs font-semibold text-slate-800";
-        quotaPtsTd.textContent = s.quotaPoints ?? 0;
+        quotaPtsTd.textContent = s?.quotaPoints ?? 0;
         quotaPtsTd.dataset.playerId = pid;
         quotaPtsTd.dataset.round = round;
         quotaPtsTd.dataset.type = "quotaPoints";
@@ -953,7 +957,7 @@ function renderScoreGrid(round) {
 
         const dailyTd = document.createElement("td");
         dailyTd.className = "px-2 py-2 text-center text-xs font-semibold text-slate-800";
-        dailyTd.textContent = s.dailyScore ?? 0;
+        dailyTd.textContent = s?.dailyScore ?? 0;
         dailyTd.dataset.playerId = pid;
         dailyTd.dataset.round = round;
         dailyTd.dataset.type = "dailyScore";
