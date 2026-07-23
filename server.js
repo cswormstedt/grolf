@@ -176,7 +176,6 @@ app.get("/courses/:courseId/tees", async (req, res) => {
 });
 
 app.post("/rounds/:roundId/apply-tee", async (req, res) => {
-  const { roundId } = req.params;
   const { courseId, teeId } = req.body;
 
   try {
@@ -192,7 +191,7 @@ app.post("/rounds/:roundId/apply-tee", async (req, res) => {
 
     const { rating, slope } = tee.rows[0];
 
-    // Apply tee values to course
+    // Update course table
     await db.query(
       `UPDATE courses
        SET rating = $1, slope = $2
@@ -207,6 +206,7 @@ app.post("/rounds/:roundId/apply-tee", async (req, res) => {
     res.status(500).json({ error: "Failed to apply tee" });
   }
 });
+
 
 app.get("/courses", async (req, res) => {
   const { rating, slope } = req.query;

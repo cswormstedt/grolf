@@ -801,60 +801,37 @@ input[type=number]::-webkit-outer-spin-button {
       document.getElementById("side-course-label").textContent = course.name;
     }
  */
-   async function renderCourseInfo(setup, round) {
+  async function renderCourseInfo(setup, round) {
   const course = courses[setup.courseKey];
   if (!course) return;
 
-  console.log("CourseKey:", setup.courseKey);
-
-  // 1️⃣ Load tees for this course
+  // Load tees
   const tees = await loadTeesForCourse(setup.courseKey);
 
-  // 2️⃣ Determine selected tee (or default)
+  // Determine selected tee
   let selectedTeeId = appState.roundSetup[round].teeId;
-
   if (!selectedTeeId && tees.length > 0) {
-    selectedTeeId = tees[0].id;     // default tee
+    selectedTeeId = tees[0].id;
     appState.roundSetup[round].teeId = selectedTeeId;
   }
 
   const selectedTee = tees.find(t => t.id == selectedTeeId);
 
-  // 3️⃣ Hydrate tee dropdown
+  // Hydrate dropdown
   const select = document.getElementById("tee-select");
   select.value = selectedTeeId;
 
-  console.log("Selected Tee:", selectedTeeId);
-
-  // 4️⃣ Safely update rating/slope UI
+  // Update rating/slope UI
   if (selectedTee) {
     document.getElementById("course-rating").textContent =
       `Rating: ${selectedTee.rating}`;
-
     document.getElementById("course-slope").textContent =
       `Slope: ${selectedTee.slope}`;
-  } else {
-    console.warn("No tee found for selected teeId:", selectedTeeId);
-    document.getElementById("course-rating").textContent = "Rating: -";
-    document.getElementById("course-slope").textContent = "Slope: -";
   }
 
-  // 5️⃣ Render static course info
+  // Static course info
   document.getElementById("course-name").textContent = course.name;
   document.getElementById("course-par").textContent = `Par: ${course.par}`;
-
-  const frontPars = course.pars.slice(0, 9).join(" • ");
-  const backPars = course.pars.slice(9).join(" • ");
-  document.getElementById("course-pars-front").textContent = frontPars;
-  document.getElementById("course-pars-back").textContent = backPars;
-
-  const frontHdcps = course.hdcps.slice(0, 9).join(" • ");
-  const backHdcps = course.hdcps.slice(9).join(" • ");
-  document.getElementById("course-hdcps-front").textContent = frontHdcps;
-  document.getElementById("course-hdcps-back").textContent = backHdcps;
-
-  document.getElementById("score-course-label").textContent = course.name;
-  document.getElementById("side-course-label").textContent = course.name;
 }
 
  
@@ -1271,53 +1248,38 @@ input[type=number]::-webkit-outer-spin-button {
 
 document.getElementById("tee-select").addEventListener("change", async (e) => {
   const round = appState.round;
+  const newTeeId = e.target.value;
 
-  // 1️⃣ Ensure round is selected
+  // Ensure round is selected
   if (!round) {
     console.warn("No round selected when changing tee.");
     return;
   }
 
-  // 2️⃣ Ensure round setup exists
+  // Ensure round setup exists
   if (!appState.roundSetup[round]) {
-    console.warn("Round setup missing — hydrating now.");
     appState.roundSetup[round] = await fetchRoundSetup(round);
   }
 
-  const newTeeId = e.target.value;
-
-  // 3️⃣ Update SPA state safely
+  // Update SPA state
   appState.roundSetup[round].teeId = newTeeId;
 
-  // 4️⃣ Load tees for this course
+  // Load tees for this course
   const courseId = appState.roundSetup[round].courseKey;
   const tees = await loadTeesForCourse(courseId);
 
-  // 5️⃣ Find selected tee
+  // Find selected tee
   const selectedTee = tees.find(t => t.id == newTeeId);
 
-  // 6️⃣ Update rating/slope UI
-  if (selectedTee) {
-    document.getElementById("course-rating").textContent =
-      `Rating: ${selectedTee.rating}`;
-
-    document.getElementById("course-slope").textContent =
-      `Slope: ${selectedTee.slope}`;
-  } else {
-    console.warn("Selected tee not found:", newTeeId);
-  }
-
-  // 7️⃣ Optional: sync backend
-  await fetch(`/rounds/${round}/apply-tee`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ courseId, teeId: newTeeId })
-  });
-});
-
-
-
+  // Update rating/slope UI
+    if (selectedTee) {
+      document.getElementById("course-rating").textContent =
+        `Rating: ${selectedTee.rating}`;
+      document.getElementById("course-slope").textContent =
+        `Slope: ${selectedTee.slope}`;
     }
+  });
+}
 
     function setupScoreControls() {
       document.getElementById("save-scores").addEventListener("click", async () => {
