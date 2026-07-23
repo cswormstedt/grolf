@@ -288,14 +288,49 @@ input[type=number]::-webkit-outer-spin-button {
               Simulate OCR Engine
             </button>
           </div> -->
-
           <!-- Score Grid -->
-           <div class="flex items-center gap-3">
-            <div id="group-label" class="text-xl font-semibold text-mastersGreen">GROUP 1</div>
-            <div class="text-xl font-semibold text-mastersGreen">GROUP 2</div>
-           </div>
-          
-          <div id="score-grid" class="vertical-score-grid"></div>
+          <div class="overflow-x-auto mt-4">
+            <table class="min-w-full text-xs border border-slate-200 rounded-lg overflow-hidden">
+              <thead class="bg-mastersGreen text-mastersCream">
+                <tr>
+                  <th class="px-2 py-2 text-left">Player</th>
+                  <th class="px-2 py-2 text-center">Index</th>
+                  <th class="px-2 py-2 text-center">Course Hcp</th>
+                  <th class="px-2 py-2 text-center">Target Quota</th>
+                  <!-- Holes 1-18 -->
+                  <th class="px-2 py-2 text-center">1</th>
+                  <th class="px-2 py-2 text-center">2</th>
+                  <th class="px-2 py-2 text-center">3</th>
+                  <th class="px-2 py-2 text-center">4</th>
+                  <th class="px-2 py-2 text-center">5</th>
+                  <th class="px-2 py-2 text-center">6</th>
+                  <th class="px-2 py-2 text-center">7</th>
+                  <th class="px-2 py-2 text-center">8</th>
+                  <th class="px-2 py-2 text-center">9</th>
+                  <th class="px-2 py-2 text-center">10</th>
+                  <th class="px-2 py-2 text-center">11</th>
+                  <th class="px-2 py-2 text-center">12</th>
+                  <th class="px-2 py-2 text-center">13</th>
+                  <th class="px-2 py-2 text-center">14</th>
+                  <th class="px-2 py-2 text-center">15</th>
+                  <th class="px-2 py-2 text-center">16</th>
+                  <th class="px-2 py-2 text-center">17</th>
+                  <th class="px-2 py-2 text-center">18</th>
+                  <th class="px-2 py-2 text-center">Quota Pts</th>
+                  <th class="px-2 py-2 text-center">Daily Score</th>
+                </tr>
+              </thead>
+              <tbody id="score-grid-body" class="bg-white divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+
+          <div class="flex justify-end mt-4">
+            <button id="save-scores"
+                    class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-mastersGreen text-mastersCream text-xs font-semibold shadow-sm hover:bg-mastersGreen/90">
+              Save Scores to DB
+            </button>
+          </div>
+        </div>
 
           <div class="flex justify-middle mt-4">
             <span class="flex justify-middle" style="padding-left: 250px;"></span>
@@ -853,85 +888,75 @@ input[type=number]::-webkit-outer-spin-button {
     }
 
 function renderScoreGrid(round) {
-  const container = document.getElementById("score-grid");
-  container.innerHTML = "";
+ const setup = appState.roundSetup[round];
+      const course = courses[setup.courseKey];
+      const tbody = document.getElementById("score-grid-body");
+      tbody.innerHTML = "";
 
-  const setup = appState.roundSetup[round];
-  const playersInRound = [...setup.group1, ...setup.group2];
+      const allPlayers = [...setup.group1, ...setup.group2];
 
-  container.style.setProperty("--player-count", playersInRound.length);
+      allPlayers.forEach(pid => {
+        const player = players.find(p => p.id === pid);
+        computePlayerRoundScore(round, pid);
+        const s = appState.scores[round][pid];
 
-  // Header: Hole label + Player info columns
-  const holeHeader = document.createElement("div");
-  holeHeader.className = "hole-label";
-  //holeHeader.textContent = "Hole";
-  container.appendChild(holeHeader);
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-mastersGreen/3";
 
-  playersInRound.forEach(pid => {
-    const info = computePlayerInfo(pid, setup.courseKey);
+        const nameTd = document.createElement("td");
+        nameTd.className = "px-2 py-2 text-left text-xs font-semibold text-slate-800";
+        nameTd.textContent = player.name;
+        tr.appendChild(nameTd);
 
-    const header = document.createElement("div");
-    header.className = "player-header";
+        const indexTD = document.createElement("td");
+        indexTd.className = "px-2 py-2 text-center text-xs text-slate-700";
+        indexTd.textContent = player.index.toFixed(1);
+        tr.appendChild(indexTd);
 
-    header.innerHTML = `
-      <div class="bg-mastersGreen text-mastersCream player-info-box">
-        <strong>${info.name}</strong><br>
-        CH: ${info.courseHandicap}<br>
-        TQ: ${info.targetQuota}
-      </div>
-    `;
+        const hcpTd = document.createElement("td");
+        hcpTd.className = "px-2 py-2 text-center text-xs text-slate-700";
+        hcpTd.textContent = s.courseHcp ?? getCourseHandicap(player.index, course);
+        tr.appendChild(hcpTd);
 
-    container.appendChild(header);
-  });
+        const quotaTd = document.createElement("td");
+        quotaTd.className = "px-2 py-2 text-center text-xs text-slate-700";
+        quotaTd.textContent = s.targetQuota ?? getTargetQuota(getCourseHandicap(player.index, course));
+        tr.appendChild(quotaTd);
 
-  // Holes 1 → 18 (ascending)
-  for (let hole = 1; hole <= 18; hole++) {
-    const holeLabel = document.createElement("div");
-    holeLabel.className = "hole-label";
-    holeLabel.textContent = hole;
-    container.appendChild(holeLabel);
-
-    playersInRound.forEach(pid => {
-      const input = document.createElement("input");
-      input.type = "text";
-      input.inputMode = "numeric";
-      input.pattern = "[0-9]*";
-      input.min = 1;
-      input.max = 10;
-      input.className = "masters-input";
-      input.dataset.round = round;
-      input.dataset.playerId = pid;
-      input.dataset.holeIndex = hole - 1;
-
-      const scoreObj = appState.scores[round]?.[pid];
-      const gross = scoreObj?.gross[hole - 1] ?? null;
-
-      if (gross !== null) {
-        input.value = gross;
-
-        const par = courses[setup.courseKey].pars[hole - 1];
-        const scoreClass = getScoreClass(gross, par);
-        if (scoreClass) input.classList.add(scoreClass);
-      }
-
-      input.addEventListener("input", e => {
-        onGrossScoreChange(e);
-
-        const val = Number(e.target.value);
-        const par = courses[setup.courseKey].pars[hole - 1];
-
-        e.target.classList.remove("score-birdie", "score-par", "score-bogey", "score-double");
-
-        if (!isNaN(val)) {
-          const scoreClass = getScoreClass(val, par);
-          if (scoreClass) e.target.classList.add(scoreClass);
-        }
-      });
-
-      container.appendChild(input);
-    });
-  }
+        for (let i = 0; i < 18; i++) {
+          const td = document.createElement("td");
+          td.className = "px-1 py-1 text-center";
+          const input = document.createElement("input");
+          input.type = "number";
+          input.min = "1";
+          input.className = "w-12 px-1 py-0.5 text-xs border border-slate-300 rounded bg-slate-50 focus:outline-none focus:ring-1 focus:ring-mastersGreen/50";
+          input.value = s.gross?.[i] ?? "";
+          input.dataset.round = round;
+          input.dataset.playerId = pid;
+          input.dataset.holeIndex = i;
+          input.addEventListener("change", onGrossScoreChange);
+          td.appendChild(input);
+          tr.appendChild(td);
 }
+        const quotaPtsTd = document.createElement("td");
+        quotaPtsTd.className = "px-2 py-2 text-center text-xs font-semibold text-slate-800";
+        quotaPtsTd.textContent = s.quotaPoints ?? 0;
+        quotaPtsTd.dataset.playerId = pid;
+        quotaPtsTd.dataset.round = round;
+        quotaPtsTd.dataset.type = "quotaPoints";
+        tr.appendChild(quotaPtsTd);
+
+        const dailyTd = document.createElement("td");
+        dailyTd.className = "px-2 py-2 text-center text-xs font-semibold text-slate-800";
+        dailyTd.textContent = s.dailyScore ?? 0;
+        dailyTd.dataset.playerId = pid;
+        dailyTd.dataset.round = round;
+        dailyTd.dataset.type = "dailyScore";
+        tr.appendChild(dailyTd);
+
+        tbody.appendChild(tr);
+      });
+    }
 
 
     function renderLeaderboard() {
@@ -1270,9 +1295,8 @@ document.getElementById("tee-select").addEventListener("change", async (e) => {
     function setupScoreControls() {
       document.getElementById("save-scores").addEventListener("click", async () => {
         const round = appState.currentRound;
-        saveScores(round);
-       /*  const scoresForRound = appState.scores[round];
-        await api.saveScores(round, scoresForRound); */
+       const scoresForRound = appState.scores[round];
+        await api.saveScores(round, scoresForRound);
         alert(`Scores for Round ${round} saved to DB (stubbed API call).`);
       });
     }
@@ -1361,7 +1385,7 @@ async function getCoursesByRatingSlope(rating, slope) {
   return await res.json();
 }
 
-function buildScoreGrid() {
+/* function buildScoreGrid() {
   const tbody = document.getElementById("score-grid");
   tbody.innerHTML = "";
 
@@ -1384,8 +1408,8 @@ function buildScoreGrid() {
     tbody.appendChild(tr);
   });
 }
-
-function hydrateScores(round) {
+ */
+/* function hydrateScores(round) {
   if (!appState.scores[round]) {
     appState.scores[round] = {};
   }
@@ -1431,7 +1455,7 @@ async function saveScores(round) {
 
   alert("Scores saved.");
 }
-
+ */
 
 
 
