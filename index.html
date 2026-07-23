@@ -1422,12 +1422,13 @@ function hydrateBeerGrid() {
       const input = tr.querySelector(`input[data-round="${r}"]`);
       const val = appState.beers[r][player.id] ?? 0;
       input.value = val;
+      console.log(appState.beers[r][player.id]);
     }
-    console.log(appState.beers[r][player.id]);
+    
     const total = (appState.beers[1][player.id] ?? 0) +
                   (appState.beers[2][player.id] ?? 0) +
                   (appState.beers[3][player.id] ?? 0);
-      console.log("this is total ", total, "for ", appState.beers[r][player.id], " player");
+      console.log("this is total ", total);
     tr.querySelector(".total-beers").textContent = total;
   });
 }
