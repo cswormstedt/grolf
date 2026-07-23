@@ -499,7 +499,6 @@ input[type=number]::-webkit-outer-spin-button {
     async function loadRoundSetupFromDB(round) {
       const res = await fetch(`/rounds/${round}/setup`);
       const data = await res.json();
-      console.log(data)
       if (!appState.roundSetup) appState.roundSetup = {};
 
       const group1 = data.groups
@@ -548,10 +547,8 @@ input[type=number]::-webkit-outer-spin-button {
 
 
     async function saveGroupSetup(round) {
-        console.log("called inside save group")    // Ensure round setup is loaded
+   // Ensure round setup is loaded
     const setup = appState.roundSetup[round];
-
-      console.log(setup)
       await fetch(`/rounds/${round}/setup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -623,25 +620,17 @@ input[type=number]::-webkit-outer-spin-button {
       if (!setup) return;
 
       const course = courses[setup.courseKey];
-      console.log(course);
+
       const player = players.find(p => p.id === playerId);
       if (!player || !course) return;
-
-      console.log(player);
       const courseHcp = getCourseHandicap(player.index, course);
-      console.log(courseHcp);
       const targetQuota = getTargetQuota(courseHcp);
       const strokesPerHole = getHandicapAllocation(courseHcp, course);
-      console.log("before safety check on round and players");
             // SAFETY: ensure score object exists
       if (!appState.scores[round]) return;
       if (!appState.scores[round][playerId]) return;
 
-      console.log("after safety check on round and players");
-
       const grossScores = appState.scores[round][playerId].gross;
-
-      console.log(grossScores);
 
       const hasAnyGross = grossScores.some(v => v !== null && !isNaN(v));
       if (!hasAnyGross) return;
@@ -651,7 +640,6 @@ input[type=number]::-webkit-outer-spin-button {
 
       for (let i = 0; i < 18; i++) {
         const gross = grossScores[i];
-        console.log("this is gross ", gross, " for hole ", i)
         if (gross == null || isNaN(gross)){
           totalQuotaPoints = 0;
           continue;
@@ -677,8 +665,6 @@ input[type=number]::-webkit-outer-spin-button {
         targetQuota,
         strokesPerHole
       };
-
-      console.log(appState.scores[round][playerId]);
     }
 
     // Compute tournament leaderboard
@@ -1103,7 +1089,6 @@ function renderScoreGrid(round) {
       updateScoreRowDisplay(round, playerId);
       renderLeaderboard();
       renderSideGames(round);
-      console.log("maybe where error is happening")
       saveScore(round, playerId, holeIndex, value);
 
     }
@@ -1184,11 +1169,7 @@ function renderScoreGrid(round) {
       
 
       roundSelect.addEventListener("change", () => {
-        console.log("on change event");
-        console.log(roundSelect.value);
-
         const round = Number(roundSelect.value);
-
         appState.currentRound = round;
 
          fetchRoundSetup(round).then(f => {
@@ -1198,13 +1179,10 @@ function renderScoreGrid(round) {
         //  hydrateScores(round);
 
         const setup = appState.roundSetup[round];
-        console.log("set up");
-        console.log(setup);
+
         appState.currentCourseKey = setup.courseKey;
         
         const course = courses[appState.currentCourseKey];
-        console.log("course");
-        console.log(course)
 
         document.getElementById("course-label").textContent = course.name; 
         document.getElementById("score-round-label").textContent = round;
@@ -1220,7 +1198,7 @@ function renderScoreGrid(round) {
 
 
       document.getElementById("apply-groups").addEventListener("click", () => {
-        console.log("clicked save round")
+
         const round = appState.currentRound;
         const group1El = document.getElementById("group-1");
         const group2El = document.getElementById("group-2");
@@ -1237,7 +1215,6 @@ function renderScoreGrid(round) {
         appState.roundSetup[round].group2 = group2;
         
         saveGroupSetup(round);
-        console.log("called save group")
         renderScoreGrid(round);
         renderLeaderboard();
         renderSideGames(round);
@@ -1311,7 +1288,6 @@ document.getElementById("tee-select").addEventListener("change", async (e) => {
       document.getElementById("save-scores").addEventListener("click", async () => {
         const round = appState.currentRound;
         const scoresForRound = appState.scores[round];
-        console.log(scoresForRound);
         await api.saveScores(round, scoresForRound);
         alert(`Scores for Round ${round} saved to DB.`);
       });
@@ -1433,13 +1409,11 @@ function hydrateBeerGrid() {
       const input = tr.querySelector(`input[data-round="${r}"]`);
       const val = appState.beers[r][player.id] ?? 0;
       input.value = val;
-      console.log("this player id " , appState.beers[r][player.id]);
     }
     
     const total = (appState.beers[1][player.id] ?? 0) +
                   (appState.beers[2][player.id] ?? 0) +
                   (appState.beers[3][player.id] ?? 0);
-      console.log("this is total ", total);
 
     tr.querySelector(".total-beers").textContent = total;
   });
@@ -1455,10 +1429,7 @@ document.getElementById("beer-tbody").addEventListener("input", (e) => {
   const val = Number(e.target.value) || 0;
 
   appState.beers[round][playerId] = val;
-  console.log("this is appstate ", appState);
-  console.log("this is appstate.beers ", appState.beers);
-  console.log("this is playerid ",playerId);
-  console.log("this is round ", round);
+ 
 
   // Update total
   const total =
@@ -1469,7 +1440,7 @@ document.getElementById("beer-tbody").addEventListener("input", (e) => {
   if (playerId === "P2"){
       console.log("hoff joke");
       console.log(appState.beers[round][playerId]);
-      HoffTotal = Math.round(total/.5);
+      HoffTotal = Math.round(total * .5);
   };
 
   tr.querySelector(".total-beers").textContent = HoffTotal;
