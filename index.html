@@ -623,7 +623,11 @@ input[type=number]::-webkit-outer-spin-button {
 
       for (let i = 0; i < 18; i++) {
         const gross = grossScores[i];
-        if (gross == null || isNaN(gross)) continue;
+        console.log("this is gross ", gross, " for hole ", i)
+        if (gross == null || isNaN(gross)){
+          totalQuotaPoints = 0;
+          continue;
+        } 
         const netRel = getNetRelativeToPar(gross, course.pars[i], strokesPerHole[i]);
         totalQuotaPoints += getQuotaPointsForHole(netRel);
       }
