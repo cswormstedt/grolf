@@ -275,19 +275,6 @@ input[type=number]::-webkit-outer-spin-button {
             </div>
           </div>
 
-          <!-- Upload Scorecard (OCR) -->
-<!--           <div class="border border-dashed border-mastersGreen/40 rounded-lg p-4 flex flex-col md:flex-row items-center justify-between gap-4 bg-mastersGreen/5">
-            <div>
-              <h3 class="text-sm font-semibold text-mastersGreen">Upload Scorecard Image (OCR Preview)</h3>
-              <p class="text-xs text-slate-600 mt-1">
-                Future pipeline: drag-and-drop or upload scorecard photos to auto-populate gross scores via OCR.
-              </p>
-            </div>
-            <button id="ocr-upload-btn"
-                    class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-mastersGreen text-mastersCream text-xs font-semibold shadow-sm hover:bg-mastersGreen/90">
-              Simulate OCR Engine
-            </button>
-          </div> -->
           <!-- Score Grid -->
           <div class="overflow-x-auto mt-4">
             <table class="min-w-full text-xs border border-slate-200 rounded-lg overflow-hidden">
@@ -403,22 +390,27 @@ input[type=number]::-webkit-outer-spin-button {
     </main>
   </div>
 
-  <!-- OCR Modal -->
-  <div id="ocr-modal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-xl shadow-lg max-w-md w-full p-6">
-      <h3 class="text-lg font-semibold text-mastersGreen mb-2">OCR Engine Pipeline Simulated</h3>
-      <p class="text-sm text-slate-700 mb-4">
-        This is a frontend simulation. The scorecard OCR pipeline is ready to be wired to your backend API
-        (e.g., Node/Express in <span class="font-mono text-xs bg-slate-100 px-1 rounded">server.js</span> using
-        <span class="font-mono text-xs bg-slate-100 px-1 rounded">db.js</span> and your PostgreSQL
-        <span class="font-mono text-xs bg-slate-100 px-1 rounded">golf_trip</span> database).
-      </p>
-      <button id="close-ocr-modal"
-              class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-mastersGreen text-mastersCream text-xs font-semibold shadow-sm hover:bg-mastersGreen/90">
-        Close
-      </button>
-    </div>
-  </div>
+  <div id="beer-tab" class="tab-content hidden">
+  <h2 class="text-xl font-bold mb-4">Beer Tracker</h2>
+
+  <table class="min-w-full text-left border">
+    <thead class="bg-green-700 text-white">
+      <tr>
+        <th class="p-2">Player</th>
+        <th class="p-2">Round 1</th>
+        <th class="p-2">Round 2</th>
+        <th class="p-2">Round 3</th>
+        <th class="p-2">Total</th>
+      </tr>
+    </thead>
+    <tbody id="beer-tbody"></tbody>
+  </table>
+
+  <button id="save-beers" class="mt-4 bg-green-700 text-white px-4 py-2 rounded">
+    Save Beer Counts
+  </button>
+</div>
+
 
   <script>
     /************************************************************
@@ -467,6 +459,12 @@ input[type=number]::-webkit-outer-spin-button {
       roundSetup: {}, 
       scores: {}
     };
+
+    appState.beers = {
+        1: {}, // round 1
+        2: {}, // round 2
+        3: {}  // round 3
+      };
 
     async function loadRoundSetupFromDB(round) {
       const res = await fetch(`/rounds/${round}/setup`);
@@ -1373,6 +1371,87 @@ async function getCoursesByRatingSlope(rating, slope) {
   return await res.json();
 }
 
+function buildBeerGrid() {
+  const tbody = document.getElementById("beer-tbody");
+  tbody.innerHTML = "";
+
+  players.forEach(player => {
+    const tr = document.createElement("tr");
+    tr.dataset.playerId = player.id;
+
+    tr.innerHTML = `
+      <td class="p-2 font-bold">${player.name}</td>
+      <td class="p-2"><input type="number" min="0" class="beer-input" data-round="1"></td>
+      <td class="p-2"><input type="number" min="0" class="beer-input" data-round="2"></td>
+      <td class="p-2"><input type="number" min="0" class="beer-input" data-round="3"></td>
+      <td class="p-2 font-bold total-beers">0</td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+}
+
+function hydrateBeerGrid() {
+  const tbody = document.getElementById("beer-tbody");
+
+  players.forEach(player => {
+    const tr = tbody.querySelector(`tr[data-player-id="${player.id}"]`);
+
+    for (let r = 1; r <= 3; r++) {
+      const input = tr.querySelector(`input[data-round="${r}"]`);
+      const val = appState.beers[r][player.id] ?? 0;
+      input.value = val;
+    }
+
+    const total = (appState.beers[1][player.id] ?? 0) +
+                  (appState.beers[2][player.id] ?? 0) +
+                  (appState.beers[3][player.id] ?? 0);
+
+    tr.querySelector(".total-beers").textContent = total;
+  });
+}
+document.getElementById("beer-tbody").addEventListener("input", (e) => {
+  if (!e.target.classList.contains("beer-input")) return;
+
+  const round = Number(e.target.dataset.round);
+  const tr = e.target.closest("tr");
+  const playerId = tr.dataset.playerId;
+
+  const val = Number(e.target.value) || 0;
+
+  appState.beers[round][playerId] = val;
+
+  // Update total
+  const total =
+    (appState.beers[1][playerId] ?? 0) +
+    (appState.beers[2][playerId] ?? 0) +
+    (appState.beers[3][playerId] ?? 0);
+
+  tr.querySelector(".total-beers").textContent = total;
+});
+
+document.getElementById("save-beers").addEventListener("click", async () => {
+  for (let r = 1; r <= 3; r++) {
+    for (const player of players) {
+      const beers = appState.beers[r][player.id] ?? 0;
+
+      await fetch(`/rounds/${r}/beers`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          player_id: player.id,
+          beers
+        })
+      });
+    }
+  }
+
+  alert("Beer counts saved!");
+});
+
+
+
+
     /************************************************************
      * 7. INITIALIZATION
      ************************************************************/
@@ -1382,6 +1461,8 @@ async function getCoursesByRatingSlope(rating, slope) {
         setupRoundControls();
         setupScoreControls();
         setupSideGamesControls();
+        buildBeerGrid();
+
         //setupOCRModal();
 
         // Load round setup from DB

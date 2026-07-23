@@ -253,6 +253,27 @@ app.get("/courses", async (req, res) => {
   }
 });
 
+app.post("/rounds/:roundId/beers", async (req, res) => {
+  const roundId = req.params.roundId;
+  const { player_id, beers } = req.body;
+
+  try {
+    await db.query(
+      `INSERT INTO beers (round_id, player_id, beers)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (round_id, player_id)
+       DO UPDATE SET beers = $3`,
+      [roundId, player_id, beers]
+    );
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Beer save error:", err);
+    res.status(500).json({ error: "Failed to save beers" });
+  }
+});
+
+
 
 
 
