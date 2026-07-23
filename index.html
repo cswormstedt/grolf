@@ -477,14 +477,15 @@ input[type=number]::-webkit-outer-spin-button {
       currentCourseKey: "diamond_springs",
       // roundSetup[round] = { courseKey, group1: [playerIds], group2: [playerIds] }
       roundSetup: {}, 
-      scores: {}
-    };
-
-    appState.beers = {
+      scores: {},
+      beers: {
         1: {}, // round 1
         2: {}, // round 2
         3: {}  // round 3
-      };
+      }
+    };
+
+  
 
     async function loadRoundSetupFromDB(round) {
       const res = await fetch(`/rounds/${round}/setup`);
