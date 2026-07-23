@@ -1440,7 +1440,7 @@ document.getElementById("beer-tbody").addEventListener("input", (e) => {
   if (playerId === "P2"){
       console.log("hoff joke");
       console.log(appState.beers[round][playerId]);
-      HoffTotal = Math.round(total * .5);
+      HoffTotal = (total * .5);
   };
 
   tr.querySelector(".total-beers").textContent = HoffTotal;
@@ -1465,6 +1465,20 @@ document.getElementById("save-beers").addEventListener("click", async () => {
   alert("Beer counts saved!");
 });
 
+async function loadBeerCounts() {
+  for (let r = 1; r <= 3; r++) {
+    const res = await fetch(`/rounds/${r}/beers`);
+    const rows = await res.json();
+
+    if (!appState.beers[r]) appState.beers[r] = {};
+
+    rows.forEach(row => {
+      appState.beers[r][row.player_id] = row.beers;
+    });
+  }
+}
+
+
 
 
 
@@ -1477,8 +1491,9 @@ document.getElementById("save-beers").addEventListener("click", async () => {
         setupRoundControls();
         setupScoreControls();
         setupSideGamesControls();
+        await loadBeerCounts();
         buildBeerGrid();
-        hydrateBeerGrid()
+        hydrateBeerGrid();
         //setupOCRModal();
 
         // Load round setup from DB
