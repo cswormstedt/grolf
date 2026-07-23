@@ -1433,13 +1433,14 @@ function hydrateBeerGrid() {
       const input = tr.querySelector(`input[data-round="${r}"]`);
       const val = appState.beers[r][player.id] ?? 0;
       input.value = val;
-      console.log(appState.beers[r][player.id]);
+      console.log("this player id " , appState.beers[r][player.id]);
     }
     
     const total = (appState.beers[1][player.id] ?? 0) +
                   (appState.beers[2][player.id] ?? 0) +
                   (appState.beers[3][player.id] ?? 0);
       console.log("this is total ", total);
+
     tr.querySelector(".total-beers").textContent = total;
   });
 }
@@ -1465,7 +1466,9 @@ document.getElementById("beer-tbody").addEventListener("input", (e) => {
     (appState.beers[2][playerId] ?? 0) +
     (appState.beers[3][playerId] ?? 0);
 
-  if (appState.beers[round][playerId].toString == "P2"){
+  if (appState.beers[round][playerId] == P2){
+      console.log("hoff joke");
+      console.log(appState.beers[round][playerId]);
       total = Math.round(total/.5);
   };
 
