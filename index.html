@@ -47,6 +47,15 @@
       font-size: 13px;
       line-height: 1.2;
     }
+
+    .beer-input {
+      width: 70px;
+      text-align: center;
+      padding: 4px;
+      border: 2px solid #0B6623; /* Masters green */
+      border-radius: 6px;
+      font-size: 14px;
+    }
   
     .masters-input {
       width: 70px;
@@ -1402,9 +1411,9 @@ function buildBeerGrid() {
 
     tr.innerHTML = `
       <td class="p-2 font-bold">${player.name}</td>
-      <td class="p-2"><input type="text" min="0" pattern = "[0-9]*" class="masters-input" data-round="1"></td>
-      <td class="p-2"><input type="text" min="0" pattern = "[0-9]*" class="masters-input" data-round="2"></td>
-      <td class="p-2"><input type="text" min="0" pattern = "[0-9]*" class="masters-input" data-round="3"></td>
+      <td class="p-2"><input type="text" min="0" pattern = "[0-9]*" class="beer-input" data-round="1"></td>
+      <td class="p-2"><input type="text" min="0" pattern = "[0-9]*" class="beer-input" data-round="2"></td>
+      <td class="p-2"><input type="text" min="0" pattern = "[0-9]*" class="beer-input" data-round="3"></td>
       <td class="p-2 font-bold total-beers">0</td>
     `;
 
@@ -1419,6 +1428,8 @@ function hydrateBeerGrid() {
     const tr = tbody.querySelector(`tr[data-player-id="${player.id}"]`);
 
     for (let r = 1; r <= 3; r++) {
+      if (!appState.beers[r]) appState.beers[r] = {};
+      if (!appState.beers[r][player.id]) appState.beers[r][player.id] = 0;
       const input = tr.querySelector(`input[data-round="${r}"]`);
       const val = appState.beers[r][player.id] ?? 0;
       input.value = val;
@@ -1439,6 +1450,7 @@ document.getElementById("beer-tbody").addEventListener("input", (e) => {
   const tr = e.target.closest("tr");
   const playerId = tr.dataset.playerId;
 
+  if (!appState.beers[round]) appState.beers[round] = {};
   const val = Number(e.target.value) || 0;
 
   appState.beers[round][playerId] = val;
