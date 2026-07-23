@@ -807,11 +807,11 @@ input[type=number]::-webkit-outer-spin-button {
   const course = courses[setup.courseKey];
   if (!course) return;
 
+  const selectedTeeId = appState.roundSetup[round].teeId;
   // Load tees
-  const tees = await loadTeesForCourse(setup.courseKey);
+  const tees = await loadTeesForCourse(setup.courseKey, selectedTeeId);
 
   // Determine selected tee
-  let selectedTeeId = appState.roundSetup[round].teeId;
   if (!selectedTeeId && tees.length > 0) {
     selectedTeeId = tees[0].id;
     appState.roundSetup[round].teeId = selectedTeeId;
@@ -1268,7 +1268,8 @@ document.getElementById("tee-select").addEventListener("change", async (e) => {
   appState.roundSetup[round].teeId = newTeeId;
 
   const courseId = appState.roundSetup[round].courseKey;
-  const tees = await loadTeesForCourse(courseId);
+  // ⭐ Do NOT reload dropdown here
+  const tees = await fetch(`/courses/${courseId}/tees`).then(r => r.json());
   const selectedTee = tees.find(t => t.id == newTeeId);
 
   if (selectedTee) {
@@ -1343,8 +1344,8 @@ document.getElementById("tee-select").addEventListener("change", async (e) => {
   };
 }
 
-async function loadTeesForCourse(courseId) {
-  teeHydrating = true;   // 🔒 prevent tee-change handler from firing
+async function loadTeesForCourse(courseId, selectedTeeId = null) {
+  teeHydrating = true;   // prevent change handler from firing
 
   const res = await fetch(`/courses/${courseId}/tees`);
   const tees = await res.json();
@@ -1359,9 +1360,15 @@ async function loadTeesForCourse(courseId) {
     select.appendChild(opt);
   });
 
-  teeHydrating = false;  // 🔓 allow tee-change handler again
+  // ⭐ Restore selected tee if provided
+  if (selectedTeeId) {
+    select.value = selectedTeeId;
+  }
+
+  teeHydrating = false;
   return tees;
 }
+
 
 
 
