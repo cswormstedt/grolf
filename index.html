@@ -327,18 +327,10 @@ input[type=number]::-webkit-outer-spin-button {
           <div class="flex justify-end mt-4">
             <button id="save-scores"
                     class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-mastersGreen text-mastersCream text-xs font-semibold shadow-sm hover:bg-mastersGreen/90">
-              Save Scores to DB
+              Save Scores
             </button>
           </div>
         </div>
-
-          <div class="flex justify-middle mt-4">
-            <span class="flex justify-middle" style="padding-left: 250px;"></span>
-            <button id="save-scores"
-                    class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-mastersGreen text-mastersCream text-xl font-semibold shadow-sm hover:bg-mastersGreen/90">
-              Save Scores to DB
-            </button>
-          </div>
         </div>
       </section>
 
@@ -936,9 +928,12 @@ function renderScoreGrid(round) {
           const td = document.createElement("td");
           td.className = "px-1 py-1 text-center";
           const input = document.createElement("input");
-          input.type = "number";
-          input.min = "1";
-          input.className = "w-12 px-1 py-0.5 text-xs border border-slate-300 rounded bg-slate-50 focus:outline-none focus:ring-1 focus:ring-mastersGreen/50";
+          input.type = "text";
+          input.inputMode = "numeric";
+          input.pattern = "[0-9]*";
+          input.min = 1;
+          input.max = 10;
+          input.className = "masters-input";
           input.value = s?.gross?.[i] ?? "";
           input.dataset.round = round;
           input.dataset.playerId = pid;
