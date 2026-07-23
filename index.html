@@ -1181,28 +1181,6 @@ function renderScoreGrid(round) {
         renderSideGames(round);
       });
 
-  document.getElementById("score-grid").addEventListener("input", (e) => {
-  const td = e.target;
-  if (!td.classList.contains("score-cell")) return;
-
-  const tr = td.closest("tr");
-  const playerId = tr.dataset.playerId;
-  const hole = Number(td.dataset.hole);
-  const round = appState.round;
-
-  if (!appState.scores[round]) {
-    appState.scores[round] = {};
-  }
-  if (!appState.scores[round][playerId]) {
-    appState.scores[round][playerId] = { gross: new Array(18).fill(null) };
-  }
-
-  const value = td.textContent.trim();
-  const num = value === "" ? null : Number(value);
-
-  appState.scores[round][playerId].gross[hole - 1] = Number.isNaN(num) ? null : num;
-});
-
 
       document.getElementById("apply-groups").addEventListener("click", () => {
         console.log("clicked save round")
