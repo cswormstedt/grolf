@@ -273,6 +273,51 @@ app.post("/rounds/:roundId/beers", async (req, res) => {
   }
 });
 
+app.get("/rounds/:roundId/beers", async (req, res) => {
+  const roundId = Number(req.params.roundId);
+
+  try {
+    const result = await db.query(
+      `SELECT player_id, beers
+       FROM beers
+       WHERE round_id = $1
+       ORDER BY player_id`,
+      [roundId]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error("GET /rounds/:roundId/beers error:", err);
+    res.status(500).json({ error: "Failed to load beer counts" });
+  }
+});
+
+app.get("/beers/totals", async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT 
+         p.id AS player_id,
+         p.name,
+         COALESCE(b1.beers, 0) AS round1,
+         COALESCE(b2.beers, 0) AS round2,
+         COALESCE(b3.beers, 0) AS round3,
+         COALESCE(b1.beers, 0) +
+         COALESCE(b2.beers, 0) +
+         COALESCE(b3.beers, 0) AS total_beers
+       FROM players p
+       LEFT JOIN beers b1 ON b1.player_id = p.id AND b1.round_id = 1
+       LEFT JOIN beers b2 ON b2.player_id = p.id AND b2.round_id = 2
+       LEFT JOIN beers b3 ON b3.player_id = p.id AND b3.round_id = 3
+       ORDER BY total_beers DESC`
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error("GET /beers/totals error:", err);
+    res.status(500).json({ error: "Failed to load beer totals" });
+  }
+});
+
 
 
 

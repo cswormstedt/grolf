@@ -1401,9 +1401,9 @@ function buildBeerGrid() {
 
     tr.innerHTML = `
       <td class="p-2 font-bold">${player.name}</td>
-      <td class="p-2"><input type="number" min="0" class="beer-input" data-round="1"></td>
-      <td class="p-2"><input type="number" min="0" class="beer-input" data-round="2"></td>
-      <td class="p-2"><input type="number" min="0" class="beer-input" data-round="3"></td>
+      <td class="p-2"><input type="text" min="0" pattern = "[0-9]*" class="masters-input" data-round="1"></td>
+      <td class="p-2"><input type="text" min="0" pattern = "[0-9]*" class="masters-input" data-round="2"></td>
+      <td class="p-2"><input type="text" min="0" pattern = "[0-9]*" class="masters-input" data-round="3"></td>
       <td class="p-2 font-bold total-beers">0</td>
     `;
 
@@ -1446,6 +1446,10 @@ document.getElementById("beer-tbody").addEventListener("input", (e) => {
     (appState.beers[1][playerId] ?? 0) +
     (appState.beers[2][playerId] ?? 0) +
     (appState.beers[3][playerId] ?? 0);
+
+  if (appState.beers[round][playerId] == "P2"){
+      total = Math.round(total/.5);
+  };
 
   tr.querySelector(".total-beers").textContent = total;
 });
