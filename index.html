@@ -397,7 +397,9 @@ input[type=number]::-webkit-outer-spin-button {
     /************************************************************
      * 1. DATA MODELS (Frontend Mirror of DB Seed Data)
      ************************************************************/
-    const players = [
+   let teeHydrating = false;
+   
+     const players = [
       { id: "P1", name: "Sean", index: 7.2 },
       { id: "P2", name: "Hoff", index: 10.6 },
       { id: "P3", name: "Ty", index: 11.2 },
@@ -834,6 +836,7 @@ input[type=number]::-webkit-outer-spin-button {
   document.getElementById("course-par").textContent = `Par: ${course.par}`;
 }
 
+
  
  function renderPlayerPool() {
       const poolEl = document.getElementById("player-pool");
@@ -1247,10 +1250,10 @@ input[type=number]::-webkit-outer-spin-button {
       });
 
 document.getElementById("tee-select").addEventListener("change", async (e) => {
-  const round = appState.round;
-  const newTeeId = e.target.value;
+  if (teeHydrating) return;   // 🔒 ignore events during hydration
 
-  // Ensure round is selected
+  const round = appState.currentRound;
+
   if (!round) {
     console.warn("No round selected when changing tee.");
     return;
@@ -1261,26 +1264,29 @@ document.getElementById("tee-select").addEventListener("change", async (e) => {
     appState.roundSetup[round] = await fetchRoundSetup(round);
   }
 
-  // Update SPA state
+  const newTeeId = e.target.value;
   appState.roundSetup[round].teeId = newTeeId;
 
-  // Load tees for this course
   const courseId = appState.roundSetup[round].courseKey;
   const tees = await loadTeesForCourse(courseId);
-
-  // Find selected tee
   const selectedTee = tees.find(t => t.id == newTeeId);
 
-  // Update rating/slope UI
-    if (selectedTee) {
-      document.getElementById("course-rating").textContent =
-        `Rating: ${selectedTee.rating}`;
-      document.getElementById("course-slope").textContent =
-        `Slope: ${selectedTee.slope}`;
-    }
-  });
-}
+  if (selectedTee) {
+    document.getElementById("course-rating").textContent =
+      `Rating: ${selectedTee.rating}`;
+    document.getElementById("course-slope").textContent =
+      `Slope: ${selectedTee.slope}`;
+  }
 
+  // Optional: sync backend
+  await fetch(`/rounds/${round}/apply-tee`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ courseId, teeId: newTeeId })
+  });
+});
+
+    }
     function setupScoreControls() {
       document.getElementById("save-scores").addEventListener("click", async () => {
         const round = appState.currentRound;
@@ -1338,6 +1344,8 @@ document.getElementById("tee-select").addEventListener("change", async (e) => {
 }
 
 async function loadTeesForCourse(courseId) {
+  teeHydrating = true;   // 🔒 prevent tee-change handler from firing
+
   const res = await fetch(`/courses/${courseId}/tees`);
   const tees = await res.json();
 
@@ -1351,8 +1359,10 @@ async function loadTeesForCourse(courseId) {
     select.appendChild(opt);
   });
 
-  return tees;   // ⭐ REQUIRED
+  teeHydrating = false;  // 🔓 allow tee-change handler again
+  return tees;
 }
+
 
 
 /* async function loadTeesForCourse(courseId) {
