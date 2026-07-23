@@ -1465,14 +1465,14 @@ document.getElementById("beer-tbody").addEventListener("input", (e) => {
     (appState.beers[1][playerId] ?? 0) +
     (appState.beers[2][playerId] ?? 0) +
     (appState.beers[3][playerId] ?? 0);
-
+  let HoffTotal = total;
   if (playerId === "P2"){
       console.log("hoff joke");
       console.log(appState.beers[round][playerId]);
-      total = Math.round(total/.5);
+      HoffTotal = Math.round(total/.5);
   };
 
-  tr.querySelector(".total-beers").textContent = total;
+  tr.querySelector(".total-beers").textContent = HoffTotal;
 });
 
 document.getElementById("save-beers").addEventListener("click", async () => {
