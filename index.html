@@ -756,53 +756,7 @@ input[type=number]::-webkit-outer-spin-button {
     /************************************************************
      * 5. UI RENDERING HELPERS
      ************************************************************/
-    /* function renderCourseInfo(setup, round) {
-      
-      const course = courses[setup.courseKey];
-      if (!course) return;
-      console.log(setup.courseKey);
-      loadTeesForCourse(setup.courseKey);
-        const slope = course.slope;
-        const rating = course.rating;
-        console.log(rating);
-        console.log(slope);
-        const select = document.getElementById("tee-select");
-        select.value = appState.roundSetup[round].teeId;
-        console.log(appState.roundSetup[round].teeId);
-
-      getCoursesByRatingSlope(rating, slope).then(c => {
-        if (!c || c.length === 0) {
-          console.warn("No course found for rating/slope", rating, slope);
-          return;
-        }
-
-        const r = c[0].rating;
-        const s = c[0].slope;
-
-        document.getElementById("course-rating").textContent = `Rating: ${r}`;
-        document.getElementById("course-slope").textContent = `Slope: ${s}`;
-      });
-
-
-
-      document.getElementById("course-name").textContent = course.name;
-      document.getElementById("course-par").textContent = `Par: ${course.par}`;
-
-      
-      const frontPars = course.pars.slice(0, 9).join(" • ");
-      const backPars = course.pars.slice(9).join(" • ");
-      document.getElementById("course-pars-front").textContent = frontPars;
-      document.getElementById("course-pars-back").textContent = backPars;
-
-      const frontHdcps = course.hdcps.slice(0, 9).join(" • ");
-      const backHdcps = course.hdcps.slice(9).join(" • ");
-      document.getElementById("course-hdcps-front").textContent = frontHdcps;
-      document.getElementById("course-hdcps-back").textContent = backHdcps;
-
-      document.getElementById("score-course-label").textContent = course.name;
-      document.getElementById("side-course-label").textContent = course.name;
-    }
- */
+   
   async function renderCourseInfo(setup, round) {
   const course = courses[setup.courseKey];
   if (!course) return;
@@ -898,7 +852,7 @@ input[type=number]::-webkit-outer-spin-button {
       };
     }
 
-    function renderScoreGrid(round) {
+function renderScoreGrid(round) {
   const container = document.getElementById("score-grid");
   container.innerHTML = "";
 
@@ -1179,6 +1133,8 @@ input[type=number]::-webkit-outer-spin-button {
           appState.roundSetup[round] = f;
          });
 
+         hydrateScores(round);
+
         const setup = appState.roundSetup[round];
         console.log("set up");
         console.log(setup);
@@ -1199,6 +1155,29 @@ input[type=number]::-webkit-outer-spin-button {
         renderLeaderboard();
         renderSideGames(round);
       });
+
+  document.getElementById("score-grid").addEventListener("input", (e) => {
+  const td = e.target;
+  if (!td.classList.contains("score-cell")) return;
+
+  const tr = td.closest("tr");
+  const playerId = tr.dataset.playerId;
+  const hole = Number(td.dataset.hole);
+  const round = appState.round;
+
+  if (!appState.scores[round]) {
+    appState.scores[round] = {};
+  }
+  if (!appState.scores[round][playerId]) {
+    appState.scores[round][playerId] = { gross: new Array(18).fill(null) };
+  }
+
+  const value = td.textContent.trim();
+  const num = value === "" ? null : Number(value);
+
+  appState.scores[round][playerId].gross[hole - 1] = Number.isNaN(num) ? null : num;
+});
+
 
       document.getElementById("apply-groups").addEventListener("click", () => {
         console.log("clicked save round")
@@ -1291,8 +1270,9 @@ document.getElementById("tee-select").addEventListener("change", async (e) => {
     function setupScoreControls() {
       document.getElementById("save-scores").addEventListener("click", async () => {
         const round = appState.currentRound;
-        const scoresForRound = appState.scores[round];
-        await api.saveScores(round, scoresForRound);
+        saveScores(round);
+       /*  const scoresForRound = appState.scores[round];
+        await api.saveScores(round, scoresForRound); */
         alert(`Scores for Round ${round} saved to DB (stubbed API call).`);
       });
     }
@@ -1370,31 +1350,6 @@ async function loadTeesForCourse(courseId, selectedTeeId = null) {
 }
 
 
-
-
-/* async function loadTeesForCourse(courseId) {
-  const res = await fetch(`/courses/${courseId}/tees`);
-  const tees = await res.json();
-  console.log(tees);
-  const select = document.getElementById("tee-select");
-  select.innerHTML = "";
-
-  tees.forEach(tee => {
-    const opt = document.createElement("option");
-    opt.value = tee.id;
-    opt.textContent = `${tee.name} (${tee.yardage} yds)`;
-    select.appendChild(opt);
-  }); */
-
-  // Auto-select first tee if none chosen yet
-/*   if (!appState.teeId && tees.length > 0) {
-    select.value = tees[0].id;
-  }else{ */
-    
-  // }
-
-//}
-
 async function getCoursesByRatingSlope(rating, slope) {
   const params = new URLSearchParams();
 
@@ -1405,6 +1360,80 @@ async function getCoursesByRatingSlope(rating, slope) {
 
   return await res.json();
 }
+
+function buildScoreGrid() {
+  const tbody = document.getElementById("score-grid");
+  tbody.innerHTML = "";
+
+  players.forEach(player => {
+    const tr = document.createElement("tr");
+    tr.dataset.playerId = player.id;
+
+    const nameTd = document.createElement("td");
+    nameTd.textContent = player.name;
+    tr.appendChild(nameTd);
+
+    for (let h = 1; h <= 18; h++) {
+      const td = document.createElement("td");
+      td.classList.add("score-cell");
+      td.dataset.hole = h;
+      td.contentEditable = true;
+      tr.appendChild(td);
+    }
+
+    tbody.appendChild(tr);
+  });
+}
+
+function hydrateScores(round) {
+  if (!appState.scores[round]) {
+    appState.scores[round] = {};
+  }
+
+  const tbody = document.getElementById("score-grid");
+
+  players.forEach(player => {
+    const tr = tbody.querySelector(`tr[data-player-id="${player.id}"]`);
+    if (!tr) return;
+
+    const playerScores = appState.scores[round][player.id]?.gross || [];
+
+    for (let h = 1; h <= 18; h++) {
+      const td = tr.querySelector(`td[data-hole="${h}"]`);
+      if (!td) continue;
+      td.textContent = playerScores[h - 1] ?? "";
+    }
+  });
+}
+
+async function saveScores(round) {
+  const scoresForRound = appState.scores[round];
+  if (!scoresForRound) return;
+
+  for (const playerId in scoresForRound) {
+    const gross = scoresForRound[playerId].gross || [];
+
+    for (let h = 1; h <= 18; h++) {
+      const score = gross[h - 1];
+      if (score == null) continue;
+
+      await fetch(`/rounds/${round}/scores`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          player_id: playerId,
+          hole_number: h,
+          gross_score: score
+        })
+      });
+    }
+  }
+
+  alert("Scores saved.");
+}
+
+
+
 
 
 
@@ -1450,7 +1479,8 @@ async function getCoursesByRatingSlope(rating, slope) {
 
         renderCourseInfo(setup, round);
         renderGroupsForRound(round);
-        renderScoreGrid(round);
+        buildScoreGrid();
+        //renderScoreGrid(round);
         renderLeaderboard();
         renderSideGames(round);
       }
