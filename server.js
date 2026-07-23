@@ -54,16 +54,24 @@ app.get('/rounds/:id/groups', async (req, res) => {
 // GET scores for a round
 // ---------------------------------------------------------
 app.get('/rounds/:id/scores', async (req, res) => {
-  const result = await db.query(
-    `SELECT player_id, hole_number, gross_score
-     FROM scores
-     WHERE round_id = $1
-     ORDER BY player_id, hole_number`,
-    [req.params.id]
-  );
-  res.json(result.rows);
-});
+  const roundId = req.params.id;
 
+  try {
+    const result = await db.query(
+      `SELECT player_id, hole_number, gross_score
+       FROM scores
+       WHERE round_id = $1
+       ORDER BY player_id, hole_number`,
+      [roundId]
+    );
+
+    res.json(result.rows);
+
+  } catch (err) {
+    console.error("GET /rounds/:id/scores error:", err);
+    res.status(500).json({ error: "Failed to load scores" });
+  }
+});
 // ---------------------------------------------------------
 // POST score update
 // ---------------------------------------------------------
