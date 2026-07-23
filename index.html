@@ -778,7 +778,7 @@ input[type=number]::-webkit-outer-spin-button {
             body: JSON.stringify(scoresForRound)
           });
         } catch (err) {
-          console.warn("Scores save failed (frontend stub):", err);
+          console.warn("Scores save failed:", err);
         }
       },
       async loadInitialData() {
@@ -1071,6 +1071,7 @@ function renderScoreGrid(round) {
       updateScoreRowDisplay(round, playerId);
       renderLeaderboard();
       renderSideGames(round);
+      console.log("maybe where error is happening")
       saveScore(round, playerId, holeIndex, value);
 
     }
@@ -1277,9 +1278,10 @@ document.getElementById("tee-select").addEventListener("change", async (e) => {
     function setupScoreControls() {
       document.getElementById("save-scores").addEventListener("click", async () => {
         const round = appState.currentRound;
-       const scoresForRound = appState.scores[round];
+        const scoresForRound = appState.scores[round];
+        console.log(scoresForRound);
         await api.saveScores(round, scoresForRound);
-        alert(`Scores for Round ${round} saved to DB (stubbed API call).`);
+        alert(`Scores for Round ${round} saved to DB.`);
       });
     }
 
@@ -1366,84 +1368,6 @@ async function getCoursesByRatingSlope(rating, slope) {
 
   return await res.json();
 }
-
-/* function buildScoreGrid() {
-  const tbody = document.getElementById("score-grid");
-  tbody.innerHTML = "";
-
-  players.forEach(player => {
-    const tr = document.createElement("tr");
-    tr.dataset.playerId = player.id;
-
-    const nameTd = document.createElement("td");
-    nameTd.textContent = player.name;
-    tr.appendChild(nameTd);
-
-    for (let h = 1; h <= 18; h++) {
-      const td = document.createElement("td");
-      td.classList.add("score-cell");
-      td.dataset.hole = h;
-      td.contentEditable = true;
-      tr.appendChild(td);
-    }
-
-    tbody.appendChild(tr);
-  });
-}
- */
-/* function hydrateScores(round) {
-  if (!appState.scores[round]) {
-    appState.scores[round] = {};
-  }
-
-  const tbody = document.getElementById("score-grid");
-
-  players.forEach(player => {
-    const tr = tbody.querySelector(`tr[data-player-id="${player.id}"]`);
-    if (!tr) return;
-
-    const playerScores = appState.scores[round][player.id]?.gross || [];
-
-    for (let h = 1; h <= 18; h++) {
-      const td = tr.querySelector(`td[data-hole="${h}"]`);
-      if (!td) continue;
-      td.textContent = playerScores[h - 1] ?? "";
-    }
-  });
-}
-
-async function saveScores(round) {
-  const scoresForRound = appState.scores[round];
-  if (!scoresForRound) return;
-
-  for (const playerId in scoresForRound) {
-    const gross = scoresForRound[playerId].gross || [];
-
-    for (let h = 1; h <= 18; h++) {
-      const score = gross[h - 1];
-      if (score == null) continue;
-
-      await fetch(`/rounds/${round}/scores`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          player_id: playerId,
-          hole_number: h,
-          gross_score: score
-        })
-      });
-    }
-  }
-
-  alert("Scores saved.");
-}
- */
-
-
-
-
-
-
 
     /************************************************************
      * 7. INITIALIZATION
