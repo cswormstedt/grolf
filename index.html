@@ -607,6 +607,7 @@ input[type=number]::-webkit-outer-spin-button {
       const player = players.find(p => p.id === playerId);
       if (!player || !course) return;
 
+      console.log(player);
       const courseHcp = getCourseHandicap(player.index, course);
       console.log(courseHcp);
       const targetQuota = getTargetQuota(courseHcp);
@@ -648,6 +649,8 @@ input[type=number]::-webkit-outer-spin-button {
         targetQuota,
         strokesPerHole
       };
+
+      console.log(appState.scores[round][playerId]);
     }
 
     // Compute tournament leaderboard
