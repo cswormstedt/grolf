@@ -842,6 +842,19 @@ input[type=number]::-webkit-outer-spin-button {
   // Static course info
   document.getElementById("course-name").textContent = course.name;
   document.getElementById("course-par").textContent = `Par: ${course.par}`;
+
+  const frontPars = course.pars.slice(0, 9).join(" • ");
+  const backPars = course.pars.slice(9).join(" • ");
+  document.getElementById("course-pars-front").textContent = frontPars;
+  document.getElementById("course-pars-back").textContent = backPars;
+
+  const frontHdcps = course.hdcps.slice(0, 9).join(" • ");
+  const backHdcps = course.hdcps.slice(9).join(" • ");
+  document.getElementById("course-hdcps-front").textContent = frontHdcps;
+  document.getElementById("course-hdcps-back").textContent = backHdcps;
+
+  document.getElementById("score-course-label").textContent = course.name;
+  document.getElementById("side-course-label").textContent = course.name;
 }
 
 
